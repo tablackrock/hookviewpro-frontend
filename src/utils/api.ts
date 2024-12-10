@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://api.hookviewpro.com:3001/", // Update to production URL if applicable
+  baseURL: "https://api.hookviewpro.com/", // Update to production URL if applicable
   headers: {
     "Content-Type": "application/json",
   },
