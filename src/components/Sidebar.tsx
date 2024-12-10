@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { List, ListItem, ListItemIcon, ListItemText, Box } from "@mui/material";
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box } from "@mui/material";
 import { AiFillDashboard, AiFillSetting } from "react-icons/ai";
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { RiNotification2Fill } from "react-icons/ri";
@@ -31,9 +31,10 @@ const Sidebar = () => {
       </Box>
       <List>
         {navItems.map((item) => (
-          <Link href={item.path} key={item.path} passHref>
-            <ListItem
-              button="true"
+          <ListItem key={item.path} disablePadding>
+            <ListItemButton
+              component={Link}
+              href={item.path}
               selected={pathname === item.path}
               sx={{
                 color: pathname === item.path ? "#007BFF" : "#fff",
@@ -42,8 +43,8 @@ const Sidebar = () => {
             >
               <ListItemIcon sx={{ color: "#fff" }}>{item.icon}</ListItemIcon>
               <ListItemText primary={item.name} />
-            </ListItem>
-          </Link>
+            </ListItemButton>
+          </ListItem>
         ))}
       </List>
     </Box>

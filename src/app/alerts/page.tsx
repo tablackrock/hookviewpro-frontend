@@ -14,7 +14,7 @@ import {
   Alert,
 } from "@mui/material";
 
-const Alerts = () => {
+const Alerts: React.FC = () => {
   const [alerts, setAlerts] = useState([]);
   const [error, setError] = useState("");
 
@@ -34,10 +34,16 @@ const Alerts = () => {
   }, []);
 
   // Format receivedAt date
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string): string => {
     try {
-      const options = { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" };
-      return new Date(dateString).toLocaleDateString("en-US", options);
+      const options: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return new Date(dateString).toLocaleString("en-US", options);
     } catch {
       return "Invalid Date";
     }
@@ -53,7 +59,7 @@ const Alerts = () => {
         </Typography>
 
         <Grid container spacing={4}>
-          {alerts.map((alert, index) => (
+          {alerts.map((alert: any, index: number) => (
             <Grid item xs={12} md={6} lg={4} key={alert.id || index}>
               <Card variant="outlined">
                 <CardContent>
