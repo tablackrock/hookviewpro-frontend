@@ -23,10 +23,10 @@ import {
   Alert,
   Grid,
 } from "@mui/material";
-import { AiFillEdit, AiFillDelete, AiOutlineCopy } from "react-icons/ai";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { AiFillEdit, AiFillDelete, AiOutlineCopy, AiFillPlusCircle } from "react-icons/ai";
 import { BsFillArchiveFill } from "react-icons/bs";
 
-// Define the configuration type
 interface Configuration {
   _id: string;
   name: string;
@@ -69,76 +69,113 @@ const Configurations: React.FC = () => {
     fetchConfigurations();
   }, []);
 
-  // Delete configuration by ID
-  const handleDelete = async (id: string) => {
-    try {
-      await api.delete(`/api/configurations/${id}`);
-      setSuccess("Configuration deleted successfully.");
-      fetchConfigurations(); // Refresh configurations
-    } catch (err) {
-      console.error("Failed to delete configuration", err);
-      setError("Failed to delete configuration.");
-    }
+  // Generate JSON Template
+  const generateJsonTemplate = () => {
+    const jsonTemplate = {
+      strategy: newConfig.strategy || "Unknown",
+      asset: newConfig.asset || "Unknown",
+      timeframe: newConfig.timeframe || "Unknown",
+      name: newConfig.name || "Unnamed Configuration",
+    };
+    setGeneratedJson(JSON.stringify(jsonTemplate, null, 2));
   };
 
-  // Open modal for viewing/editing configuration
-  const handleOpenEditModal = (config: Configuration) => {
-    setEditMode(true);
-    setCurrentConfig(config);
-    setNewConfig({
-      name: config.name,
-      description: config.description || "",
-      strategy: config.strategy,
-      asset: config.asset,
-      timeframe: config.timeframe,
-    });
-    setGeneratedJson(config.jsonTemplate || "");
+  // Open modal for adding or editing a configuration
+  const handleOpenModal = (config: Configuration | null) => {
+    if (config) {
+      setEditMode(true);
+      setCurrentConfig(config);
+      setNewConfig({
+        name: config.name,
+        description: config.description || "",
+        strategy: config.strategy,
+        asset: config.asset,
+        timeframe: config.timeframe,
+      });
+      setGeneratedJson(config.jsonTemplate || "");
+    } else {
+      setEditMode(false);
+      setCurrentConfig(null);
+      setNewConfig({ name: "", description: "", strategy: "", asset: "", timeframe: "" });
+      setGeneratedJson("");
+    }
     setOpen(true);
   };
 
-  // Handle closing the modal
+  // Close modal
   const handleCloseModal = () => {
     setOpen(false);
-    setEditMode(false);
-    setCurrentConfig(null);
-    setNewConfig({ name: "", description: "", strategy: "", asset: "", timeframe: "" });
-    setGeneratedJson("");
   };
 
-  // Update configuration
-  const handleUpdateConfiguration = async () => {
-    if (!currentConfig) return;
-
+  // Save configuration
+  const handleSaveConfiguration = async () => {
     try {
-      const payload = {
-        ...newConfig,
-        jsonTemplate: generatedJson,
-      };
-      await api.patch(`/api/configurations/${currentConfig._id}`, payload);
-      setSuccess("Configuration updated successfully.");
-      fetchConfigurations(); // Refresh configurations
+      const payload = { ...newConfig, jsonTemplate: generatedJson };
+
+      if (editMode && currentConfig) {
+        // Update existing configuration
+        await api.patch(`/api/configurations/${currentConfig._id}`, payload);
+        setSuccess("Configuration updated successfully.");
+      } else {
+        // Create new configuration
+        await api.post("/api/configurations", payload);
+        setSuccess("Configuration created successfully.");
+      }
+
+      fetchConfigurations();
       handleCloseModal();
     } catch (err) {
-      console.error("Failed to update configuration", err);
-      setError("Failed to update configuration.");
+      console.error("Failed to save configuration", err);
+      setError("Failed to save configuration.");
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: unknown }>) => {
+  // Handle input changes for text fields
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     if (name) {
-      setNewConfig({ ...newConfig, [name]: value as string });
+      setNewConfig((prev) => {
+        const updatedConfig = { ...prev, [name]: value };
+        setGeneratedJson(
+          JSON.stringify(
+            {
+              strategy: updatedConfig.strategy,
+              asset: updatedConfig.asset,
+              timeframe: updatedConfig.timeframe,
+              name: updatedConfig.name,
+            },
+            null,
+            2
+          )
+        );
+        return updatedConfig;
+      });
     }
   };
 
-  const generateJsonTemplate = () => {
-    const jsonTemplate = {
-      strategy: newConfig.strategy,
-      asset: newConfig.asset,
-      timeframe: newConfig.timeframe,
-      name: newConfig.name,
-    };
-    setGeneratedJson(JSON.stringify(jsonTemplate, null, 2));
+  // Handle input changes for select fields
+  const handleSelectChange = (e: SelectChangeEvent<string>) => {
+    const { name, value } = e.target;
+    if (name) {
+      setNewConfig((prev) => {
+        const updatedConfig = { ...prev, [name]: value };
+        setGeneratedJson(
+          JSON.stringify(
+            {
+              strategy: updatedConfig.strategy,
+              asset: updatedConfig.asset,
+              timeframe: updatedConfig.timeframe,
+              name: updatedConfig.name,
+            },
+            null,
+            2
+          )
+        );
+        return updatedConfig;
+      });
+    }
   };
 
   const handleCopy = () => {
@@ -156,6 +193,16 @@ const Configurations: React.FC = () => {
           Configurations
         </Typography>
 
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AiFillPlusCircle />}
+          onClick={() => handleOpenModal(null)}
+          sx={{ mb: 2 }}
+        >
+          Add New Configuration
+        </Button>
+
         <Grid container spacing={4}>
           {configurations.map((config) => (
             <Grid item xs={12} md={6} lg={4} key={config._id}>
@@ -169,17 +216,17 @@ const Configurations: React.FC = () => {
                   </Typography>
                   <Box mt={2} display="flex" justifyContent="space-between">
                     <Tooltip title="Edit/View">
-                      <IconButton color="primary" onClick={() => handleOpenEditModal(config)}>
+                      <IconButton color="primary" onClick={() => handleOpenModal(config)}>
                         <AiFillEdit />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete">
-                      <IconButton color="error" onClick={() => handleDelete(config._id)}>
+                      <IconButton color="error">
                         <AiFillDelete />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Archive">
-                      <IconButton color="secondary" onClick={() => console.log("Archive", config._id)}>
+                      <IconButton color="secondary">
                         <BsFillArchiveFill />
                       </IconButton>
                     </Tooltip>
@@ -190,7 +237,109 @@ const Configurations: React.FC = () => {
           ))}
         </Grid>
 
-        {/* Modal and Snackbar logic remains unchanged */}
+        {/* Modal for Add/Edit */}
+        <Modal open={open} onClose={handleCloseModal}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              bgcolor: "white",
+              borderRadius: 2,
+              boxShadow: 24,
+              p: 4,
+              width: 400,
+            }}
+          >
+            <Typography variant="h6" fontWeight="bold" mb={2}>
+              {editMode ? "Edit Configuration" : "Add New Configuration"}
+            </Typography>
+            <TextField
+              label="Name"
+              name="name"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={newConfig.name}
+              onChange={handleInputChange}
+            />
+            <TextField
+              label="Description"
+              name="description"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={newConfig.description}
+              onChange={handleInputChange}
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Strategy</InputLabel>
+              <Select
+                name="strategy"
+                value={newConfig.strategy}
+                onChange={handleSelectChange}
+              >
+                <MenuItem value="Moving Average">Moving Average</MenuItem>
+                <MenuItem value="RSI">RSI</MenuItem>
+                <MenuItem value="MACD">MACD</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              label="Asset"
+              name="asset"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={newConfig.asset}
+              onChange={handleInputChange}
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Timeframe</InputLabel>
+              <Select
+                name="timeframe"
+                value={newConfig.timeframe}
+                onChange={handleSelectChange}
+              >
+                <MenuItem value="1m">1 Minute</MenuItem>
+                <MenuItem value="5m">5 Minutes</MenuItem>
+                <MenuItem value="1h">1 Hour</MenuItem>
+                <MenuItem value="1d">1 Day</MenuItem>
+              </Select>
+            </FormControl>
+            <Typography
+              variant="body2"
+              sx={{ whiteSpace: "pre-wrap", bgcolor: "#f4f6f8", p: 2, borderRadius: 1, mt: 2 }}
+            >
+              {generatedJson}
+            </Typography>
+            <Box mt={2} display="flex" justifyContent="space-between">
+              <Button onClick={handleCloseModal} variant="outlined" color="error">
+                Cancel
+              </Button>
+
+              
+              <Button
+                onClick={handleCopy}
+                variant="contained"
+                color={copied ? "success" : "primary"}
+                startIcon={<AiOutlineCopy />}
+              >
+                {copied ? "Copied!" : "Copy JSON"}
+              </Button>
+
+              <Button
+                onClick={handleSaveConfiguration}
+                variant="contained"
+                color="primary"
+                sx={{ ml: 2 }}
+              >
+                Save Configuration
+              </Button>
+
+            </Box>
+          </Box>
+        </Modal>
       </Box>
     </Box>
   );
