@@ -230,6 +230,9 @@ const Configurations: React.FC = () => {
                     {config.name}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
+                    {config.asset || "No asset provided"}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
                     {config.description || "No description provided"}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
