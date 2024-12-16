@@ -233,6 +233,9 @@ const Configurations: React.FC = () => {
                     {config.description || "No description provided"}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
+                    {config.direction || "No direction provided"}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
                     Status: {config.status}
                   </Typography>
                   <Box mt={2} display="flex" justifyContent="space-between">
