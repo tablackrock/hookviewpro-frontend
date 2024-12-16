@@ -5,33 +5,126 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import api from "../../utils/api";
 import withAuth from "../../utils/withAuth";
-import { Card, CardContent, Typography, Button, Box } from "@mui/material";
-import { AiOutlineCopy } from "react-icons/ai";
-import { motion } from "framer-motion";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  Button,
+  Tooltip,
+  Modal,
+  TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Snackbar,
+  Alert,
+  Grid,
+  InputAdornment,
+} from "@mui/material";
+import { SelectChangeEvent } from "@mui/material/Select";
+import { AiFillEdit, AiFillDelete, AiOutlineCopy, AiFillPlusCircle } from "react-icons/ai";
+import { BsFillArchiveFill } from "react-icons/bs";
 
-const Dashboard = () => {
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [stats, setStats] = useState({ configurations: 0, alerts: 0 });
-  const [copied, setCopied] = useState(false);
+interface Alert {
+  _id: string;
+  payload: {
+    strategy: string;
+    asset: string;
+    timeframe: string;
+    ticker: string;
+    interval: string;
+    [key: string]: any;
+  };
+  receivedAt: string;
+}
+
+const Dashboard: React.FC = () => {
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [error, setError] = useState<string>("");
+  const [filter, setFilter] = useState({
+    strategy: "",
+    asset: "",
+    timeframe: "",
+    direction: "",
+  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [uniqueStrategies, setUniqueStrategies] = useState<string[]>([]);
+  const [uniqueAssets, setUniqueAssets] = useState<string[]>([]);
+
+  const intervalMapping: { [key: string]: string } = {
+    "1m": "1",
+    "5m": "5",
+    "15m": "15",
+    "1h": "60",
+    "4h": "240",
+    "1d": "1440",
+  };
+
+  // Fetch alerts from API
+  const [uniqueDirections, setUniqueDirections] = useState<string[]>([]);
+
+  const fetchAlerts = async () => {
+    try {
+      const response = await api.get("/api/alerts?limit=50");
+      const fetchedAlerts = response.data;
+
+      // Sort alerts by receivedAt in descending order
+    const sortedAlerts = fetchedAlerts.sort(
+      (a: Alert, b: Alert) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
+    );
+
+    setAlerts(sortedAlerts);
+  
+      const strategies = new Set<string>();
+      const assets = new Set<string>();
+      const directions = new Set<string>(); // New
+  
+      fetchedAlerts.forEach((alert: Alert) => {
+        if (alert.payload.strategy) strategies.add(alert.payload.strategy);
+        if (alert.payload.asset) assets.add(alert.payload.asset);
+        if (alert.payload.direction) directions.add(alert.payload.direction); // New
+      });
+  
+      setUniqueStrategies(Array.from(strategies));
+      setUniqueAssets(Array.from(assets));
+      setUniqueDirections(Array.from(directions)); // New
+    } catch (err) {
+      console.error("Failed to fetch alerts", err);
+      setError("Failed to load alerts.");
+    }
+  };
+  
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        const response = await api.get("api/dashboard");
-        setWebhookUrl(response.data.webhookUrl);
-        setStats(response.data.stats);
-      } catch (err) {
-        console.error("Failed to fetch dashboard data", err);
-      }
-    };
-
-    fetchDashboardData();
+    fetchAlerts();
   }, []);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(webhookUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const filteredAlerts = alerts.filter((alert) => {
+    const { strategy, asset, timeframe } = filter;
+    const matchesStrategy = strategy ? alert.payload.strategy === strategy : true;
+    const matchesAsset = asset ? alert.payload.asset === asset : true;
+    const matchesTimeframe = timeframe ? alert.payload.timeframe === timeframe : true;
+    const matchesSearch = searchTerm
+      ? JSON.stringify(alert.payload).toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+
+    return matchesStrategy && matchesAsset && matchesTimeframe && matchesSearch;
+  });
+
+  const handleFilterChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string }>
+  ) => {
+    const { name, value } = e.target;
+    setFilter((prev) => ({ ...prev, [name as string]: value }));
+  };
+
+  const handleSearchChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setSearchTerm(e.target.value);
   };
 
   return (
@@ -43,54 +136,131 @@ const Dashboard = () => {
           Dashboard
         </Typography>
 
-        <Card variant="outlined" sx={{ mb: 4, p: 3 }}>
-          <Typography variant="h6" fontWeight="bold" gutterBottom>
-            Your Webhook URL
-          </Typography>
-          <Box display="flex" alignItems="center" gap={2}>
-            <Typography variant="body1" sx={{ overflowWrap: "break-word" }}>
-              {webhookUrl}
-            </Typography>
-            <Button
-              variant="contained"
-              color={copied ? "success" : "primary"}
-              startIcon={<AiOutlineCopy />}
-              onClick={handleCopy}
+        <Box display="flex" gap={2} mb={4}>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Strategy</InputLabel>
+            <Select
+              name="strategy"
+              value={filter.strategy}
+              onChange={handleFilterChange as any}
+              label="Strategy"
             >
-              {copied ? "Copied!" : "Copy"}
-            </Button>
-          </Box>
-        </Card>
+              <MenuItem value="">All</MenuItem>
+              {uniqueStrategies.map((strategy) => (
+                <MenuItem key={strategy} value={strategy}>
+                  {strategy}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-        <Box display="grid" gridTemplateColumns="repeat(auto-fit, minmax(300px, 1fr))" gap={4}>
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Card variant="outlined" sx={{ bgcolor: "#007BFF", color: "#fff", p: 2 }}>
-              <CardContent>
-                <Typography variant="h6">Active Configurations</Typography>
-                <Typography variant="h3" fontWeight="bold">
-                  {stats.configurations}
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Asset</InputLabel>
+            <Select
+              name="asset"
+              value={filter.asset}
+              onChange={handleFilterChange as any}
+              label="Asset"
+            >
+              <MenuItem value="">All</MenuItem>
+              {uniqueAssets.map((asset) => (
+                <MenuItem key={asset} value={asset}>
+                  {asset}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
 
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Card variant="outlined" sx={{ bgcolor: "#6A0DAD", color: "#fff", p: 2 }}>
-              <CardContent>
-                <Typography variant="h6">Alerts Received</Typography>
-                <Typography variant="h3" fontWeight="bold">
-                  {stats.alerts}
-                </Typography>
-              </CardContent>
-            </Card>
-          </motion.div>
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Direction</InputLabel>
+            <Select
+              name="direction"
+              value={filter.direction}
+              onChange={handleFilterChange as any}
+              label="Direction"
+            >
+              <MenuItem value="">All</MenuItem>
+              {uniqueDirections.map((direction) => (
+                <MenuItem key={direction} value={direction}>
+                  {direction}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Timeframe</InputLabel>
+            <Select
+              name="timeframe"
+              value={filter.timeframe}
+              onChange={handleFilterChange as any}
+              label="Timeframe"
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="1m">1 Minute</MenuItem>
+              <MenuItem value="5m">5 Minutes</MenuItem>
+              <MenuItem value="15m">15 Minutes</MenuItem>
+              <MenuItem value="1h">1 Hour</MenuItem>
+              <MenuItem value="4h">4 Hours</MenuItem>
+              <MenuItem value="1d">1 Day</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            size="small"
+            placeholder="Search..."
+            variant="outlined"
+            fullWidth
+            value={searchTerm}
+            onChange={handleSearchChange}
+            InputProps={{
+              startAdornment: <InputAdornment position="start">🔍</InputAdornment>,
+            }}
+          />
         </Box>
+
+        <Grid container spacing={4}>
+          {filteredAlerts.map((alert) => (
+            <Grid item xs={12} md={6} lg={4} key={alert._id}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="h6" fontWeight="bold">
+                    {alert.payload.strategy || "Unknown Strategy"}
+                  </Typography>
+                  <Typography variant="body2">
+                    Asset: {alert.payload.asset || "Unknown Asset"}
+                  </Typography>
+                  <Typography variant="body2">
+                    Timeframe: {alert.payload.timeframe || "Unknown Timeframe"}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Received: {new Date(alert.receivedAt).toLocaleString()}
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    color="primary"
+                    href={`https://www.tradingview.com/chart?symbol=${alert.payload.asset}&interval=${intervalMapping[alert.payload.timeframe.toLowerCase()]}`}
+                    target="_blank"
+                    sx={{ mt: 1 }}
+                  >
+                    Open in TradingView
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+
+        <Snackbar
+          open={Boolean(error)}
+          autoHideDuration={3000}
+          onClose={() => setError("")}
+        >
+          <Alert severity="error" onClose={() => setError("")}>
+            {error}
+          </Alert>
+        </Snackbar>
       </Box>
     </Box>
   );

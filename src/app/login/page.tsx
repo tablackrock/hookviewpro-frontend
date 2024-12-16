@@ -17,7 +17,7 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await api.post("/api/users/login", { email, password });
-      login(response.data.token);
+      login(response.data.token,{email});
       router.push("/dashboard");
     } catch (err) {
       setError("Invalid email or password.");

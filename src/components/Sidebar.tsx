@@ -5,9 +5,12 @@ import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box } from 
 import { AiFillDashboard, AiFillSetting } from "react-icons/ai";
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { RiNotification2Fill } from "react-icons/ri";
+import { BiLogOut } from "react-icons/bi";
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = () => {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: <AiFillDashboard /> },
@@ -29,6 +32,11 @@ const Sidebar = () => {
       <Box p={2} textAlign="center" fontWeight="bold" fontSize="1.5rem">
         HookViewPro
       </Box>
+
+      <Box p={2} textAlign="center" fontSize="1rem" color="#ccc">
+        {user?.email || "User"}
+      </Box>
+
       <List>
         {navItems.map((item) => (
           <ListItem key={item.path} disablePadding>
@@ -47,6 +55,19 @@ const Sidebar = () => {
           </ListItem>
         ))}
       </List>
+
+      <Box mt="auto" p={2}>
+        <ListItemButton
+          onClick={logout}
+          sx={{
+            color: "#fff",
+            "&:hover": { bgcolor: "#444" },
+          }}
+        >
+          <ListItemIcon sx={{ color: "#fff" }}><BiLogOut /></ListItemIcon>
+          <ListItemText primary="Logout" />
+        </ListItemButton>
+      </Box>
     </Box>
   );
 };

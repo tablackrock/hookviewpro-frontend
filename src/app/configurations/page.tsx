@@ -35,6 +35,8 @@ interface Configuration {
   asset: string;
   timeframe: string;
   jsonTemplate?: string;
+  status: string;
+  direction: string;
 }
 
 const Configurations: React.FC = () => {
@@ -50,6 +52,8 @@ const Configurations: React.FC = () => {
     strategy: "",
     asset: "",
     timeframe: "",
+    status: "active",
+    direction:"",
   });
   const [generatedJson, setGeneratedJson] = useState<string>("");
   const [copied, setCopied] = useState<boolean>(false);
@@ -69,34 +73,35 @@ const Configurations: React.FC = () => {
     fetchConfigurations();
   }, []);
 
-  // Generate JSON Template
-  const generateJsonTemplate = () => {
-    const jsonTemplate = {
-      strategy: newConfig.strategy || "Unknown",
-      asset: newConfig.asset || "Unknown",
-      timeframe: newConfig.timeframe || "Unknown",
-      name: newConfig.name || "Unnamed Configuration",
-    };
-    setGeneratedJson(JSON.stringify(jsonTemplate, null, 2));
-  };
-
   // Open modal for adding or editing a configuration
   const handleOpenModal = (config: Configuration | null) => {
     if (config) {
+      generateJsonTemplate(config);
       setEditMode(true);
       setCurrentConfig(config);
       setNewConfig({
         name: config.name,
         description: config.description || "",
-        strategy: config.strategy,
+        strategy: config.name || "",
         asset: config.asset,
         timeframe: config.timeframe,
+        status: config.status,
+        direction: config.direction || "",
       });
-      setGeneratedJson(config.jsonTemplate || "");
+    
+      
     } else {
       setEditMode(false);
       setCurrentConfig(null);
-      setNewConfig({ name: "", description: "", strategy: "", asset: "", timeframe: "" });
+      setNewConfig({
+        name: "",
+        description: "",
+        strategy: "",
+        asset: "",
+        timeframe: "",
+        status: "active",
+        direction: "",
+      });
       setGeneratedJson("");
     }
     setOpen(true);
@@ -110,8 +115,8 @@ const Configurations: React.FC = () => {
   // Save configuration
   const handleSaveConfiguration = async () => {
     try {
-      const payload = { ...newConfig, jsonTemplate: generatedJson };
-
+      const payload = { ...newConfig, jsonTemplate: JSON.parse(generatedJson) };
+      payload.strategy = payload.name
       if (editMode && currentConfig) {
         // Update existing configuration
         await api.patch(`/api/configurations/${currentConfig._id}`, payload);
@@ -130,53 +135,66 @@ const Configurations: React.FC = () => {
     }
   };
 
-  // Handle input changes for text fields
+  // Delete configuration
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/api/configurations/${id}`);
+      setSuccess("Configuration deleted successfully.");
+      fetchConfigurations();
+    } catch (err) {
+      console.error("Failed to delete configuration", err);
+      setError("Failed to delete configuration.");
+    }
+  };
+
+  // Archive configuration
+  const handleArchive = async (id: string) => {
+    try {
+      await api.patch(`/api/configurations/${id}`, { status: "archived" });
+      setSuccess("Configuration archived successfully.");
+      fetchConfigurations();
+    } catch (err) {
+      console.error("Failed to archive configuration", err);
+      setError("Failed to archive configuration.");
+    }
+  };
+
+  // Handle input changes
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    if (name) {
-      setNewConfig((prev) => {
-        const updatedConfig = { ...prev, [name]: value };
-        setGeneratedJson(
-          JSON.stringify(
-            {
-              strategy: updatedConfig.strategy,
-              asset: updatedConfig.asset,
-              timeframe: updatedConfig.timeframe,
-              name: updatedConfig.name,
-            },
-            null,
-            2
-          )
-        );
-        return updatedConfig;
-      });
-    }
+    setNewConfig((prev) => ({ ...prev, [name]: value }));
+    generateJsonTemplate({ ...newConfig, [name]: value });
   };
 
-  // Handle input changes for select fields
   const handleSelectChange = (e: SelectChangeEvent<string>) => {
     const { name, value } = e.target;
-    if (name) {
-      setNewConfig((prev) => {
-        const updatedConfig = { ...prev, [name]: value };
-        setGeneratedJson(
-          JSON.stringify(
-            {
-              strategy: updatedConfig.strategy,
-              asset: updatedConfig.asset,
-              timeframe: updatedConfig.timeframe,
-              name: updatedConfig.name,
-            },
-            null,
-            2
-          )
-        );
-        return updatedConfig;
-      });
-    }
+    setNewConfig((prev) => ({ ...prev, [name]: value }));
+    generateJsonTemplate({ ...newConfig, [name]: value });
   };
+
+  // Generate JSON template dynamically
+  const generateJsonTemplate = (config: Partial<Configuration>) => {
+    const template = {
+      close: "{{close}}",
+      open: "{{open}}",
+      high: "{{high}}",
+      low: "{{low}}",
+      time: "{{time}}",
+      ticker: "{{ticker}}",
+      interval: "{{interval}}",
+      volume: "{{volume}}",
+      strategy: config.name || "",
+      asset: config.asset || "",
+      timeframe: config.timeframe || "",
+      description: config.description || "",
+      status: config.status || "active",
+      direction: config.direction || "",
+    };
+    setGeneratedJson(JSON.stringify(template, null, 2));
+  };
+  
 
   const handleCopy = () => {
     navigator.clipboard.writeText(generatedJson);
@@ -214,19 +232,31 @@ const Configurations: React.FC = () => {
                   <Typography variant="body2" color="textSecondary">
                     {config.description || "No description provided"}
                   </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Status: {config.status}
+                  </Typography>
                   <Box mt={2} display="flex" justifyContent="space-between">
                     <Tooltip title="Edit/View">
-                      <IconButton color="primary" onClick={() => handleOpenModal(config)}>
+                      <IconButton
+                        color="primary"
+                        onClick={() => handleOpenModal(config)}
+                      >
                         <AiFillEdit />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Delete">
-                      <IconButton color="error">
+                      <IconButton
+                        color="error"
+                        onClick={() => handleDelete(config._id)}
+                      >
                         <AiFillDelete />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Archive">
-                      <IconButton color="secondary">
+                      <IconButton
+                        color="secondary"
+                        onClick={() => handleArchive(config._id)}
+                      >
                         <BsFillArchiveFill />
                       </IconButton>
                     </Tooltip>
@@ -248,8 +278,8 @@ const Configurations: React.FC = () => {
               bgcolor: "white",
               borderRadius: 2,
               boxShadow: 24,
-              p: 4,
-              width: 400,
+              p: 5,
+              width: 500,
             }}
           >
             <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -273,18 +303,15 @@ const Configurations: React.FC = () => {
               value={newConfig.description}
               onChange={handleInputChange}
             />
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Strategy</InputLabel>
-              <Select
-                name="strategy"
-                value={newConfig.strategy}
-                onChange={handleSelectChange}
-              >
-                <MenuItem value="Moving Average">Moving Average</MenuItem>
-                <MenuItem value="RSI">RSI</MenuItem>
-                <MenuItem value="MACD">MACD</MenuItem>
-              </Select>
-            </FormControl>
+            <TextField
+              label="Timeframe"
+              name="timeframe"
+              variant="outlined"
+              fullWidth
+              margin="normal"
+              value={newConfig.timeframe}
+              onChange={handleInputChange}
+            />
             <TextField
               label="Asset"
               name="asset"
@@ -295,53 +322,88 @@ const Configurations: React.FC = () => {
               onChange={handleInputChange}
             />
             <FormControl fullWidth margin="normal">
-              <InputLabel>Timeframe</InputLabel>
+              <InputLabel>Status</InputLabel>
               <Select
-                name="timeframe"
-                value={newConfig.timeframe}
+                name="status"
+                value={newConfig.status}
                 onChange={handleSelectChange}
               >
-                <MenuItem value="1m">1 Minute</MenuItem>
-                <MenuItem value="5m">5 Minutes</MenuItem>
-                <MenuItem value="1h">1 Hour</MenuItem>
-                <MenuItem value="1d">1 Day</MenuItem>
-              </Select>
-            </FormControl>
-            <Typography
-              variant="body2"
-              sx={{ whiteSpace: "pre-wrap", bgcolor: "#f4f6f8", p: 2, borderRadius: 1, mt: 2 }}
-            >
-              {generatedJson}
-            </Typography>
-            <Box mt={2} display="flex" justifyContent="space-between">
-              <Button onClick={handleCloseModal} variant="outlined" color="error">
-                Cancel
-              </Button>
+                             <MenuItem value="active">Active</MenuItem>
+             <MenuItem value="disabled">Disabled</MenuItem>
+             <MenuItem value="archived">Archived</MenuItem>
+           </Select>
+         </FormControl>
 
-              
-              <Button
-                onClick={handleCopy}
-                variant="contained"
-                color={copied ? "success" : "primary"}
-                startIcon={<AiOutlineCopy />}
+         <FormControl fullWidth margin="normal">
+              <InputLabel>Direction</InputLabel>
+              <Select
+                name="direction"
+                value={newConfig.direction}
+                onChange={handleSelectChange}
               >
-                {copied ? "Copied!" : "Copy JSON"}
-              </Button>
+                             <MenuItem value="buy">Buy</MenuItem>
+             <MenuItem value="sell">Sell</MenuItem>
+           </Select>
+         </FormControl>
 
-              <Button
-                onClick={handleSaveConfiguration}
-                variant="contained"
-                color="primary"
-                sx={{ ml: 2 }}
-              >
-                Save Configuration
-              </Button>
+         <Typography variant="body2" mt={3} mb={1} fontWeight="bold">
+           Generated JSON:
+         </Typography>
+         <Box
+           component="pre"
+           bgcolor="#f4f6f8"
+           p={2}
+           borderRadius={2}
+           sx={{ overflow: "auto", maxHeight: 150 }}
+         >
+           {generatedJson}
+         </Box>
+         <Button
+           variant="outlined"
+           color={copied ? "success" : "primary"}
+           startIcon={<AiOutlineCopy />}
+           onClick={handleCopy}
+           sx={{ mt: 1 }}
+         >
+           {copied ? "Copied!" : "Copy to Clipboard"}
+         </Button>
 
-            </Box>
-          </Box>
-        </Modal>
-      </Box>
-    </Box>
+         <Box mt={2} display="flex" justifyContent="space-between">
+           <Button onClick={handleCloseModal} variant="outlined" color="error">
+             Cancel
+           </Button>
+           <Button
+             onClick={handleSaveConfiguration}
+             variant="contained"
+             color="primary"
+           >
+             Save Configuration
+           </Button>
+         </Box>
+       </Box>
+     </Modal>
+
+                 {/* Snackbar Notifications */}
+     <Snackbar
+       open={Boolean(success)}
+       autoHideDuration={3000}
+       onClose={() => setSuccess("")}
+     >
+       <Alert severity="success" onClose={() => setSuccess("")}>
+         {success}
+       </Alert>
+     </Snackbar>
+     <Snackbar
+       open={Boolean(error)}
+       autoHideDuration={3000}
+       onClose={() => setError("")}
+     >
+       <Alert severity="error" onClose={() => setError("")}>
+         {error}
+       </Alert>
+     </Snackbar>
+   </Box>
+ </Box>
   );
 };
 
