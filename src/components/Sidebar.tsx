@@ -16,6 +16,7 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/dashboard", icon: <AiFillDashboard /> },
     { name: "Configurations", path: "/configurations", icon: <MdOutlineManageAccounts /> },
     { name: "Alerts", path: "/alerts", icon: <RiNotification2Fill /> },
+    { name: "Payloads", path: "/payloads", icon: <RiNotification2Fill /> },
     { name: "Settings", path: "/settings", icon: <AiFillSetting /> },
   ];
 
