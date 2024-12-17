@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
     const { strategy, asset, timeframe } = filter;
     const matchesStrategy = strategy ? alert.payload.strategy === strategy : true;
     const matchesAsset = asset ? alert.payload.asset === asset : true;
-    const matchesTimeframe = timeframe ? alert.payload.timeframe === timeframe : true;
+    const matchesTimeframe = timeframe.toLowerCase() ? alert.payload.timeframe.toLowerCase() === timeframe : true;
     const matchesSearch = searchTerm
       ? JSON.stringify(alert.payload).toLowerCase().includes(searchTerm.toLowerCase())
       : true;
@@ -225,7 +225,7 @@ const Dashboard: React.FC = () => {
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
-                    {alert.payload.strategy || "Unknown Strategy"}
+                    {alert.payload.strategy || "Unknown Strategy"} - {alert.payload.direction || ""}
                   </Typography>
                   <Typography variant="body2">
                     Asset: {alert.payload.asset || "Unknown Asset"}
