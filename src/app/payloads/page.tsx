@@ -14,6 +14,19 @@ import {
   Alert,
 } from "@mui/material";
 
+interface Alert {
+  _id: string;
+  payload: {
+    strategy: string;
+    asset: string;
+    timeframe: string;
+    ticker: string;
+    interval: string;
+    [key: string]: any;
+  };
+  receivedAt: string;
+}
+
 const Payloads: React.FC = () => {
   const [payloads, setPayloads] = useState([]);
   const [error, setError] = useState("");
@@ -23,7 +36,7 @@ const Payloads: React.FC = () => {
     const fetchPayloads = async () => {
       try {
         const response = await api.get("/api/payloads");
-        setPayloads(response.data);
+        setPayloads(response.data.sort((a: Alert, b: Alert) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()));
       } catch (err) {
         console.error("Failed to fetch payloads", err);
         setError("Failed to load payloads.");

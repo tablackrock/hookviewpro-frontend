@@ -14,6 +14,19 @@ import {
   Alert,
 } from "@mui/material";
 
+interface Alert {
+  _id: string;
+  payload: {
+    strategy: string;
+    asset: string;
+    timeframe: string;
+    ticker: string;
+    interval: string;
+    [key: string]: any;
+  };
+  receivedAt: string;
+}
+
 const Alerts: React.FC = () => {
   const [alerts, setAlerts] = useState([]);
   const [error, setError] = useState("");
@@ -23,7 +36,10 @@ const Alerts: React.FC = () => {
     const fetchAlerts = async () => {
       try {
         const response = await api.get("/api/alerts");
-        setAlerts(response.data);
+        const sortedAlerts = response.data.sort(
+          (a: Alert, b: Alert) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
+        );
+        setAlerts(sortedAlerts);
       } catch (err) {
         console.error("Failed to fetch alerts", err);
         setError("Failed to load alerts.");
