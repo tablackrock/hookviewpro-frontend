@@ -36,29 +36,36 @@ interface Alert {
     timeframe: string;
     ticker: string;
     interval: string;
+    status: string;
     [key: string]: any;
   };
+  status: string;
   receivedAt: string;
 }
 
 const Dashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
   const [filter, setFilter] = useState({
     strategy: "",
     asset: "",
     timeframe: "",
     direction: "",
+    status:"",
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [uniqueStrategies, setUniqueStrategies] = useState<string[]>([]);
   const [uniqueAssets, setUniqueAssets] = useState<string[]>([]);
+  const [uniqueStatus, setUniqueStatus] = useState<string[]>([]);
+  
 
   const intervalMapping: { [key: string]: string } = {
     "1m": "1",
     "5m": "5",
     "15m": "15",
     "1h": "60",
+    "h1": "60",
     "4h": "240",
     "1d": "1440",
   };
@@ -70,27 +77,31 @@ const Dashboard: React.FC = () => {
     try {
       const response = await api.get("/api/alerts?limit=50");
       const fetchedAlerts = response.data;
-
+  
       // Sort alerts by receivedAt in descending order
-    const sortedAlerts = fetchedAlerts.sort(
-      (a: Alert, b: Alert) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
-    );
-
-    setAlerts(sortedAlerts);
+      const sortedAlerts = fetchedAlerts.sort(
+        (a: Alert, b: Alert) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
+      );
+  
+      setAlerts(sortedAlerts);
   
       const strategies = new Set<string>();
       const assets = new Set<string>();
-      const directions = new Set<string>(); // New
+      const directions = new Set<string>();
+      const alertStatus = new Set<string>();
   
-      fetchedAlerts.forEach((alert: Alert) => {
+      // Use sortedAlerts for processing
+      sortedAlerts.forEach((alert: Alert) => {
         if (alert.payload.strategy) strategies.add(alert.payload.strategy);
         if (alert.payload.asset) assets.add(alert.payload.asset);
-        if (alert.payload.direction) directions.add(alert.payload.direction); // New
+        if (alert.payload.direction) directions.add(alert.payload.direction);
+        if (alert.status) alertStatus.add(alert.status);
       });
   
       setUniqueStrategies(Array.from(strategies));
       setUniqueAssets(Array.from(assets));
-      setUniqueDirections(Array.from(directions)); // New
+      setUniqueDirections(Array.from(directions));
+      setUniqueStatus(Array.from(alertStatus));
     } catch (err) {
       console.error("Failed to fetch alerts", err);
       setError("Failed to load alerts.");
@@ -103,22 +114,87 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const filteredAlerts = alerts.filter((alert) => {
-    const { strategy, asset, timeframe } = filter;
+    const { strategy, asset, timeframe, direction, status } = filter;
+
+    const allowedStatuses = ["active", "new", "trade"];
+    const matchesAllowedStatuses = status
+      ? alert.status === status
+      : allowedStatuses.includes(alert.status);
     const matchesStrategy = strategy ? alert.payload.strategy === strategy : true;
     const matchesAsset = asset ? alert.payload.asset === asset : true;
-    const matchesTimeframe = timeframe.toLowerCase() ? alert.payload.timeframe.toLowerCase() === timeframe : true;
+    const matchesTimeframe = timeframe ? alert.payload.timeframe.toLowerCase() === timeframe : true;
+    const matchesDirection = direction ? alert.payload.direction === direction : true;
     const matchesSearch = searchTerm
       ? JSON.stringify(alert.payload).toLowerCase().includes(searchTerm.toLowerCase())
       : true;
-
-    return matchesStrategy && matchesAsset && matchesTimeframe && matchesSearch;
+  
+    return (
+      matchesStrategy &&
+      matchesAsset &&
+      matchesTimeframe &&
+      matchesDirection &&
+      matchesAllowedStatuses &&
+      matchesSearch
+    );
   });
+   // Reject Alert
+   const handleReject = async (id: string) => {
+    try {
+      await api.post(`/api/alerts/reject/${id}`);
+      setSuccess("Alert rejected successfully.");
+      fetchAlerts();
+    } catch (err) {
+      console.error("Failed to reject alert", err);
+      setError("Failed to reject alert.");
+    }
+  };
+
+  // Active Alert
+  const handleActive = async (id: string) => {
+    try {
+      await api.post(`/api/alerts/active/${id}`);
+      setSuccess("Alert activated successfully.");
+      fetchAlerts();
+    } catch (err) {
+      console.error("Failed to activate alert", err);
+      setError("Failed to activate alert.");
+    }
+  };
+
+  // TradeAlert
+  const handleTrade = async (id: string) => {
+    try {
+      await api.post(`/api/alerts/trade/${id}`);
+      setSuccess("Alert trading successfully.");
+      fetchAlerts();
+    } catch (err) {
+      console.error("Failed to trade alert", err);
+      setError("Failed to trade alert.");
+    }
+  };
+
+  // TradeAlert
+  const handleArchive = async (id: string) => {
+    try {
+      await api.post(`/api/alerts/archive/${id}`);
+      setSuccess("Alert archived successfully.");
+      fetchAlerts();
+    } catch (err) {
+      console.error("Failed to archive alert", err);
+      setError("Failed to archive alert.");
+    }
+  };
 
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string }>
   ) => {
     const { name, value } = e.target;
-    setFilter((prev) => ({ ...prev, [name as string]: value }));
+    //if(name != 'status'){
+      setFilter((prev) => ({ ...prev, [name as string]: value }));
+    //}else{
+    //  setSearchTerm(value);
+    //}
+    
   };
 
   const handleSearchChange = (
@@ -133,7 +209,7 @@ const Dashboard: React.FC = () => {
       <Box component="main" flexGrow={1} p={4} bgcolor="#f4f6f8">
         <Header />
         <Typography variant="h4" fontWeight="bold" mb={4}>
-          Dashboard
+          Dashboard - {filteredAlerts.length} Alerts
         </Typography>
 
         <Box display="flex" gap={2} mb={4}>
@@ -189,6 +265,23 @@ const Dashboard: React.FC = () => {
           </FormControl>
 
           <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              name="status"
+              value={filter.status}
+              onChange={handleFilterChange as any}
+              label="Status"
+            >
+              <MenuItem value="">All</MenuItem>
+              {uniqueStatus.map((status) => (
+                <MenuItem key={status} value={status}>
+                  {status}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
             <InputLabel>Timeframe</InputLabel>
             <Select
               name="timeframe"
@@ -200,8 +293,8 @@ const Dashboard: React.FC = () => {
               <MenuItem value="1m">1 Minute</MenuItem>
               <MenuItem value="5m">5 Minutes</MenuItem>
               <MenuItem value="15m">15 Minutes</MenuItem>
-              <MenuItem value="1h">1 Hour</MenuItem>
-              <MenuItem value="4h">4 Hours</MenuItem>
+              <MenuItem value="h1">1 Hour</MenuItem>
+              <MenuItem value="h4">4 Hours</MenuItem>
               <MenuItem value="1d">1 Day</MenuItem>
             </Select>
           </FormControl>
@@ -221,17 +314,20 @@ const Dashboard: React.FC = () => {
 
         <Grid container spacing={4}>
           {filteredAlerts.map((alert) => (
-            <Grid item xs={12} md={6} lg={4} key={alert._id}>
+            <Grid item xs={12} md={3} lg={3} key={alert._id}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
                     {alert.payload.strategy || "Unknown Strategy"} - {alert.payload.direction || ""}
                   </Typography>
                   <Typography variant="body2">
-                    Asset: {alert.payload.asset || "Unknown Asset"}
+                    Asset: {alert.payload.asset || "Unknown Asset"} : {alert.status || ""}
                   </Typography>
                   <Typography variant="body2">
                     Timeframe: {alert.payload.timeframe || "Unknown Timeframe"}
+                  </Typography>
+                  <Typography variant="body2">
+                    Volume: {alert.payload.volume + " @ " + alert.payload.close|| "Unknown Volume"}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Received: {new Date(alert.receivedAt).toLocaleString()}
@@ -241,10 +337,47 @@ const Dashboard: React.FC = () => {
                     variant="outlined"
                     color="primary"
                     href={`https://www.tradingview.com/chart?symbol=${alert.payload.asset}&interval=${intervalMapping[alert.payload.timeframe.toLowerCase()]}`}
-                    target="_blank"
+                    target="_new"
                     sx={{ mt: 1 }}
                   >
-                    Open in TradingView
+                    TradingView
+                  </Button>
+                  
+                  <Button
+                    size="small"
+                    variant={alert.status === "active" ? "contained" : "outlined"}
+                    color="secondary"
+                    onClick={() => handleActive(alert._id)}
+                    sx={{ mt: 1, ml: 1 }}
+                  >
+                    Active
+                  </Button>
+                  <Button
+                    size="small"
+                    variant={alert.status === "trade" ? "contained" : "outlined"}
+                    color="success"
+                    onClick={() => handleTrade(alert._id)}
+                    sx={{ mt: 1, ml: 1 }}
+                  >
+                    Trade
+                  </Button>
+                  <Button
+                    size="small"
+                    variant={alert.status === "rejected" ? "contained" : "outlined"}
+                    color="error"
+                    onClick={() => handleReject(alert._id)}
+                    sx={{ mt: 1, ml: 1 }}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    size="small"
+                    variant={alert.status === "archived" ? "contained" : "outlined"}
+                    color="warning"
+                    onClick={() => handleArchive(alert._id)}
+                    sx={{ mt: 1, ml: 1 }}
+                  >
+                    Archive
                   </Button>
                 </CardContent>
               </Card>

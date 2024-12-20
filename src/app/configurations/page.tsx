@@ -150,7 +150,7 @@ const Configurations: React.FC = () => {
   // Archive configuration
   const handleArchive = async (id: string) => {
     try {
-      await api.patch(`/api/configurations/${id}`, { status: "archived" });
+      await api.post(`/api/configurations/archive/${id}`);
       setSuccess("Configuration archived successfully.");
       fetchConfigurations();
     } catch (err) {
@@ -223,7 +223,7 @@ const Configurations: React.FC = () => {
 
         <Grid container spacing={4}>
           {configurations.map((config) => (
-            <Grid item xs={12} md={4} lg={3} key={config._id}>
+            <Grid item xs={12} md={2} lg={2} key={config._id}>
               <Card variant="outlined" sx={{ p: 2 }}>
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
