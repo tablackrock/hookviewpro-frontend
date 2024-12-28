@@ -23,7 +23,7 @@ const Settings = () => {
         const response = await api.get("/api/users/me"); // Adjust endpoint as necessary
         const { email, webhookUrl } = response.data;
         setEmail(email);
-        setWebhookUrl(webhookUrl || ""); // Default to an empty string if not provided
+        setWebhookUrl(webhookUrl.replace("hookviewpro.com","api.hookviewpro.com") || ""); // Default to an empty string if not provided
       } catch (err) {
         console.error("Failed to fetch user details", err);
         setErrorMessage("Failed to load user details.");
@@ -75,7 +75,7 @@ const Settings = () => {
             type="url"
             variant="outlined"
             fullWidth
-            value={webhookUrl.replace("hookviewpro.com","api.hookviewpro.com")}
+            value={webhookUrl}
             InputProps={{
               readOnly: true,
               endAdornment: (
