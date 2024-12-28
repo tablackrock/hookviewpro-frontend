@@ -145,8 +145,10 @@ const Alerts: React.FC = () => {
     "5m": "5",
     "15m": "15",
     "1h": "60",
+    "h1":"60",
     "4h": "240",
     "1d": "D",
+    "d1":"D",
   };
 
   // --------------------------------------
@@ -258,6 +260,8 @@ const Alerts: React.FC = () => {
       matchesSearch
     );
   });
+
+  
 
   // Status color
   const getStatusColor = (status: string) => {
