@@ -378,7 +378,7 @@ const Alerts: React.FC = () => {
         <Header />
 
         <Typography variant="h5" fontWeight="bold" mb={1}>
-          Alerts
+          Alerts - {filteredAlerts.length} 
         </Typography>
 
         {/* TOP SECTION */}
@@ -430,7 +430,7 @@ const Alerts: React.FC = () => {
             {selectedAlert ? (
               <>
                 <Typography variant="h6" fontWeight="bold">
-                                    {selectedAlert.payload.strategy || "Unknown Strategy"} - {selectedAlert.payload.direction || ""}
+                                    Configuration : {selectedAlert.payload.strategy || "Unknown Strategy"} - {selectedAlert.payload.direction || ""}
                                   </Typography>
                                   <Typography variant="body2">
                                     Asset: {selectedAlert.payload.asset || "Unknown Asset"} : {selectedAlert.status || ""}
@@ -537,6 +537,15 @@ const Alerts: React.FC = () => {
                   >
                     Archive
                   </Button>
+                  <Button
+                                      size="small"
+                                      variant="outlined"
+                                      color="primary"
+                                      href={`https://www.tradingview.com/chart?symbol=${selectedAlert.payload.asset}&interval=${intervalMapping[selectedAlert.payload.timeframe.toLowerCase()]}`}
+                                      target="_new"
+                                    >
+                                      TradingView
+                                    </Button>
                 </Box>
               </>
             ) : (
