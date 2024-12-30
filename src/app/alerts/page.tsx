@@ -381,7 +381,7 @@ const Alerts: React.FC = () => {
       <Box component="main" flexGrow={1} p={1} bgcolor="#f4f6f8">
         <Header />
 
-        <Typography variant="h5" fontWeight="bold" mb={1}>
+        <Typography variant="h5" fontWeight="bold" mb={1} color="textSecondary">
           Alerts - {filteredAlerts.length} 
         </Typography>
 
@@ -433,16 +433,16 @@ const Alerts: React.FC = () => {
           >
             {selectedAlert ? (
               <>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant="h6" fontWeight="bold" color="textSecondary">
                                     Configuration : {selectedAlert.payload.strategy || "Unknown Strategy"} - {selectedAlert.payload.direction || ""}
                                   </Typography>
-                                  <Typography variant="body2">
+                                  <Typography variant="body2" color="textSecondary">
                                     Asset: {selectedAlert.payload.asset || "Unknown Asset"} : {selectedAlert.status || ""}
                                   </Typography>
-                                  <Typography variant="body2">
+                                  <Typography variant="body2" color="textSecondary">
                                     Timeframe: {selectedAlert.payload.timeframe || "Unknown Timeframe"}
                                   </Typography>
-                                  <Typography variant="body2">
+                                  <Typography variant="body2" color="textSecondary">
                                     Volume: {selectedAlert.payload.volume + " @ " + selectedAlert.payload.close|| "Unknown Volume"}
                                   </Typography>
                                   <Typography variant="body2" color="textSecondary">
