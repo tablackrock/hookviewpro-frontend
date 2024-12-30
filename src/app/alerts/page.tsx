@@ -433,13 +433,13 @@ const Alerts: React.FC = () => {
           >
             {selectedAlert ? (
               <>
-                <Typography variant="h6" fontWeight="bold" color="color-black">
+                <Typography variant="h6" fontWeight="bold" className="text-dark">
                                     Configuration : {selectedAlert.payload.strategy || "Unknown Strategy"} - {selectedAlert.payload.direction || ""}
                                   </Typography>
-                                  <Typography variant="body2" color="color-black">
+                                  <Typography variant="body2" className="text-dark">
                                     Asset: {selectedAlert.payload.asset || "Unknown Asset"} : {selectedAlert.status || ""}
                                   </Typography>
-                                  <Typography variant="body2" color="color-black">
+                                  <Typography variant="body2" className="text-dark">
                                     Timeframe: {selectedAlert.payload.timeframe || "Unknown Timeframe"}
                                   </Typography>
                                   <Typography variant="body2" color="color-black">
