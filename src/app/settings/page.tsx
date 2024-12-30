@@ -57,7 +57,7 @@ const Settings = () => {
       <Sidebar />
       <Box component="main" flexGrow={1} p={4} bgcolor="#f4f6f8">
         <Header />
-        <Typography variant="h4" fontWeight="bold" mb={4}>
+        <Typography variant="h4" fontWeight="bold" mb={4} color="textSecondary">
           Settings
         </Typography>
 

@@ -448,7 +448,7 @@ const Alerts: React.FC = () => {
                                   <Typography variant="body2" color="textSecondary">
                                     Received: {new Date(selectedAlert.receivedAt).toLocaleString()}
                                   </Typography>
-                <Typography variant="h6">Notes</Typography>
+                <Typography variant="h6" color="textSecondary">Notes</Typography>
 
                 <Box
                   ref={editableRef}
