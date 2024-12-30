@@ -67,7 +67,7 @@ const Payloads: React.FC = () => {
       <Sidebar />
       <Box component="main" flexGrow={1} p={4} bgcolor="#f4f6f8">
         <Header />
-        <Typography variant="h4" fontWeight="bold" mb={4} className="text-dark">
+        <Typography variant="h4" fontWeight="bold" mb={4} color="textSecondary">
           Payloads
         </Typography>
 
