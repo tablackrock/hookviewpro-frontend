@@ -381,7 +381,7 @@ const Alerts: React.FC = () => {
       <Box component="main" flexGrow={1} p={1} bgcolor="#f4f6f8">
         <Header />
 
-        <Typography variant="h5" fontWeight="bold" mb={1} color="textSecondary">
+        <Typography variant="h5" fontWeight="bold" mb={1} className="color-black">
           Alerts - {filteredAlerts.length} 
         </Typography>
 
@@ -433,22 +433,22 @@ const Alerts: React.FC = () => {
           >
             {selectedAlert ? (
               <>
-                <Typography variant="h6" fontWeight="bold" color="textSecondary">
+                <Typography variant="h6" fontWeight="bold" className="color-black">
                                     Configuration : {selectedAlert.payload.strategy || "Unknown Strategy"} - {selectedAlert.payload.direction || ""}
                                   </Typography>
-                                  <Typography variant="body2" color="textSecondary">
+                                  <Typography variant="body2" className="color-black">
                                     Asset: {selectedAlert.payload.asset || "Unknown Asset"} : {selectedAlert.status || ""}
                                   </Typography>
-                                  <Typography variant="body2" color="textSecondary">
+                                  <Typography variant="body2" className="color-black">
                                     Timeframe: {selectedAlert.payload.timeframe || "Unknown Timeframe"}
                                   </Typography>
-                                  <Typography variant="body2" color="textSecondary">
+                                  <Typography variant="body2" className="color-black">
                                     Volume: {selectedAlert.payload.volume + " @ " + selectedAlert.payload.close|| "Unknown Volume"}
                                   </Typography>
-                                  <Typography variant="body2" color="textSecondary">
+                                  <Typography variant="body2" className="color-black">
                                     Received: {new Date(selectedAlert.receivedAt).toLocaleString()}
                                   </Typography>
-                <Typography variant="h6" color="textSecondary">Notes</Typography>
+                <Typography variant="h6" className="color-black">Notes</Typography>
 
                 <Box
                   ref={editableRef}

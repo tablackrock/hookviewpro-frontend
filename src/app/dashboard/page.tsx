@@ -208,7 +208,7 @@ const Dashboard: React.FC = () => {
       <Sidebar />
       <Box component="main" flexGrow={1} p={1} bgcolor="#f4f6f8">
         <Header />
-        <Typography variant="h5" fontWeight="bold" mb={1} color="textSecondary">
+        <Typography variant="h5" fontWeight="bold" mb={1} className="color-black">
           Dashboard - {filteredAlerts.length} Alerts
         </Typography>
 
