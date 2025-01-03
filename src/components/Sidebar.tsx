@@ -2,7 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Box } from "@mui/material";
-import { AiFillDashboard, AiFillSetting, AiFillContainer } from "react-icons/ai";
+import { AiFillDashboard, AiFillSetting, AiFillContainer,AiFillBank  } from "react-icons/ai";
 import { MdOutlineManageAccounts } from "react-icons/md";
 import { RiNotification2Fill } from "react-icons/ri";
 import { BiLogOut } from "react-icons/bi";
@@ -16,6 +16,7 @@ const Sidebar = () => {
     { name: "Dashboard", path: "/dashboard", icon: <AiFillDashboard /> },
     { name: "Configurations", path: "/configurations", icon: <MdOutlineManageAccounts /> },
     { name: "Alerts", path: "/alerts", icon: <RiNotification2Fill /> },
+    { name: "Trades", path: "/trades", icon: <AiFillBank /> },
     { name: "Payloads", path: "/payloads", icon: <AiFillContainer /> },
     { name: "Settings", path: "/settings", icon: <AiFillSetting /> },
   ];
