@@ -157,7 +157,10 @@ interface Trade {
   tpPrice?: number | null;
   orderType: string;   // e.g. "market"
   status: string;      // e.g. "wait", "open", "pending", ...
+  profitLoss:number | null;
   executionId?: number | null;
+  currentPrice?:number | null;
+  profitloss?: number | null;
 }
 
 //
@@ -451,6 +454,7 @@ const Trades: React.FC = () => {
                 <TableCell>Direction</TableCell>
                 <TableCell>Open Price</TableCell>
                 <TableCell>Close Price</TableCell>
+                <TableCell>P / L</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -478,6 +482,7 @@ const Trades: React.FC = () => {
                   <TableCell>{trade.payload.direction}</TableCell>
                   <TableCell>{trade.openPrice ?? ""}</TableCell>
                   <TableCell>{trade.closePrice ?? ""}</TableCell>
+                  <TableCell>{trade.profitloss ?? ""}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
