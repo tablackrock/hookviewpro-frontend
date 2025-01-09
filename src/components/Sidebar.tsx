@@ -17,10 +17,17 @@ import { BiLogOut } from "react-icons/bi";
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
 
-const Sidebar = () => {
+interface FXStrength {
+  [currency: string]: number | string; // Dynamic keys for currencies, metadata will still be strings
+  _id: string;
+  timeframe: string;
+  receivedAt: string;
+}
+
+const Sidebar: React.FC = () => {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const [fxData, setFxData] = useState(null);
+  const [fxData, setFxData] = useState<FXStrength[]>([]);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: <AiFillDashboard /> },
@@ -36,8 +43,7 @@ const Sidebar = () => {
       try {
         const response = await api.get("api/data/fxs");
         if (response.data) {
-          const data = response.data;
-          setFxData(data);
+          setFxData(response.data);
         } else {
           console.error("Failed to fetch FX strength data");
         }
@@ -48,6 +54,39 @@ const Sidebar = () => {
 
     fetchFxData();
   }, []);
+
+  const renderFxData = () => {
+    if (fxData.length < 2) {
+      return <Typography textAlign="center" color="#ccc">Loading FX data...</Typography>;
+    }
+
+    const [latest, previous] = fxData;
+
+    return Object.entries(latest)
+      .filter(([key]) => key !== "_id" && key !== "timeframe" && key !== "receivedAt" && key !== "__v")
+      .map(([currency, value]) => {
+        const latestValue = typeof value === "number" ? value : parseFloat(value as string);
+        const previousValue =
+          typeof previous[currency] === "number"
+            ? (previous[currency] as number)
+            : parseFloat(previous[currency] as string);
+
+        const change = latestValue - previousValue;
+
+        return (
+          <Typography
+            key={currency}
+            textAlign="center"
+            sx={{
+              color: latestValue > 0 ? "green" : "red",
+              fontWeight: "bold",
+            }}
+          >
+            {currency}: {latestValue.toFixed(2)} ({change >= 0 ? "+" : ""}{change.toFixed(2)})
+          </Typography>
+        );
+      });
+  };
 
   return (
     <Box
@@ -68,7 +107,6 @@ const Sidebar = () => {
       </Box>
 
       <List>
-        
         {navItems.map((item) => (
           <ListItem key={item.path} disablePadding>
             <ListItemButton
@@ -103,29 +141,7 @@ const Sidebar = () => {
         <Typography variant="h6" textAlign="center" color="#fff" mb={2}>
           FX Strength
         </Typography>
-        {fxData ? (
-  Object.entries(fxData)
-    .filter(([key]) => key !== "_id" && key !== "timeframe" && key !== "receivedAt" && key !== "__v")
-    .map(([currency, value]) => {
-      const numericValue = value as number; // Cast value to number
-      return (
-        <Typography
-          key={currency}
-          textAlign="center"
-          sx={{
-            color: numericValue > 0 ? "green" : "red", // Use numericValue here
-            fontWeight: "bold",
-          }}
-        >
-          {currency}: {numericValue.toFixed(2)}
-        </Typography>
-      );
-    })
-) : (
-          <Typography textAlign="center" color="#ccc">
-            Loading FX data...
-          </Typography>
-        )}
+        {renderFxData()}
       </Box>
     </Box>
   );

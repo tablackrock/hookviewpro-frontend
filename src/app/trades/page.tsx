@@ -477,7 +477,7 @@ const Trades: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell>{trade.payload.asset}</TableCell>
-                  <TableCell>{trade.status}</TableCell>
+                  <TableCell>{trade.status} - {trade.closedAt}</TableCell>
                   <TableCell>{trade.orderType}</TableCell>
                   <TableCell>{trade.payload.direction}</TableCell>
                   <TableCell>{trade.openPrice ?? ""}</TableCell>

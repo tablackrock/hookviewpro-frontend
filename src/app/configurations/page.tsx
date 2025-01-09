@@ -208,7 +208,7 @@ const Configurations: React.FC = () => {
       <Box component="main" flexGrow={1} p={1} bgcolor="#f4f6f8">
         <Header />
         <Typography variant="h5" fontWeight="bold" mb={1} color="textSecondary">
-          Configurations
+          Configurations - {configurations.length}
         </Typography>
 
         <Button
