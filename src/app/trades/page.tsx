@@ -278,16 +278,26 @@ const Trades: React.FC = () => {
   }
 
   // A row background if we like
-  function formatRowColor(status: string) {
+  function formatRowColor(status: string, profitloss: number|null) {
     switch (status) {
       case "wait":
         return "#f0f0f0";
       case "open":
+        if(profitloss && profitloss > 0){
+          return "#77AF77FF";
+        }else if(profitloss && profitloss < 0){
+          return "#DA8B8BFF";
+        }
         return "#eaffea";
       case "closed":
+        if(profitloss && profitloss > 0){
+          return "#77AF77FF";
+        }else if(profitloss && profitloss < 0){
+          return "#DA8B8BFF";
+        }
         return "#f5f5f5";
       case "TP":
-        return "#fff8e6";
+        return "#83B47CFF";
       case "SL":
         return "#ffeaea";
       default:
@@ -464,7 +474,7 @@ const Trades: React.FC = () => {
                   hover
                   style={{
                     cursor: "pointer",
-                    backgroundColor: formatRowColor(trade.status),
+                    backgroundColor: formatRowColor(trade.status, trade.profitloss ?? 0),
                   }}
                   onClick={() => openDrawerForTrade(trade)}
                 >
@@ -477,12 +487,12 @@ const Trades: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell>{trade.payload.asset}</TableCell>
-                  <TableCell>{trade.status} - {trade.closedAt}</TableCell>
+                  <TableCell>{trade.status} - {formatDate(trade.closedAt)}</TableCell>
                   <TableCell>{trade.orderType}</TableCell>
                   <TableCell>{trade.payload.direction}</TableCell>
                   <TableCell>{trade.openPrice ?? ""}</TableCell>
                   <TableCell>{trade.closePrice ?? ""}</TableCell>
-                  <TableCell>{trade.profitloss ?? ""}</TableCell>
+                  <TableCell>$ {trade.profitloss ?? ""}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -547,7 +557,7 @@ const Trades: React.FC = () => {
               />
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  Status: {selectedTrade.status}
+                  Status: {selectedTrade.status} Profit: ${selectedTrade.profitloss ?? ""}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   Order Type: {selectedTrade.orderType}
