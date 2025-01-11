@@ -26,6 +26,7 @@ import {
 import { SelectChangeEvent } from "@mui/material/Select";
 import { AiFillEdit, AiFillDelete, AiOutlineCopy, AiFillPlusCircle } from "react-icons/ai";
 import { BsFillArchiveFill } from "react-icons/bs";
+import { capitalizeFirstLetter } from "../../utils/utils";
 
 interface Configuration {
   _id: string;
@@ -227,7 +228,7 @@ const Configurations: React.FC = () => {
               <Card variant="outlined" sx={{ p: 2 }}>
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
-                    {config.name} - {config.asset || "No asset provided"} - {config.direction || "No direction provided"}
+                    {config.name} - {config.asset || "No asset provided"} - {capitalizeFirstLetter(config.direction) || "No direction provided"}
                   </Typography>
                 
                   <Typography variant="body2" color="textSecondary">
@@ -237,7 +238,7 @@ const Configurations: React.FC = () => {
                   Description : {config.description || "No description provided"}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    Status: {config.status}
+                    Status: {capitalizeFirstLetter(config.status)}
                   </Typography>
                   <Box mt={2} display="flex" justifyContent="space-between">
                     <Tooltip title="Edit/View">

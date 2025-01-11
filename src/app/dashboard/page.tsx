@@ -5,6 +5,8 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import api from "../../utils/api";
 import withAuth from "../../utils/withAuth";
+import { capitalizeFirstLetter,formatDateTime } from "@/utils/utils";
+
 import {
   Box,
   Typography,
@@ -318,10 +320,10 @@ const Dashboard: React.FC = () => {
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
-                    {alert.payload.strategy || "Unknown Strategy"} - {alert.payload.direction || ""}
+                    Strategy: {alert.payload.strategy || "Unknown Strategy"} - {capitalizeFirstLetter(alert.payload.direction) || ""}
                   </Typography>
                   <Typography variant="body2">
-                    Asset: {alert.payload.asset || "Unknown Asset"} : {alert.status || ""}
+                    Asset: {alert.payload.asset || "Unknown Asset"} : {capitalizeFirstLetter(alert.status) || ""}
                   </Typography>
                   <Typography variant="body2">
                     Timeframe: {alert.payload.timeframe || "Unknown Timeframe"}

@@ -23,8 +23,10 @@ import {
   Select,
   FormControl,
   InputLabel,
+  Card,
+  CardContent,
 } from "@mui/material";
-import { AiOutlineEdit, AiOutlineClose, AiOutlineCopy, AiOutlinePlus,AiOutlineDelete } from "react-icons/ai"; // Import icons
+import { AiOutlineEdit, AiOutlineClose, AiOutlineCopy, AiOutlinePlus, AiOutlineDelete } from "react-icons/ai"; // Import icons
 import api from "../../utils/api";
 
 interface Account {
@@ -41,6 +43,13 @@ interface Configuration {
   _id: string;
   name: string;
   asset: string;
+}
+
+interface Alert {
+  asset: string;
+  timeframe: string;
+  direction: string;
+  receivedAt: string;
 }
 
 const Settings: React.FC = () => {
@@ -79,6 +88,7 @@ const Settings: React.FC = () => {
 
         const accountsResponse = await api.get("/api/accounts");
         setAccounts(accountsResponse.data.accounts || []); // Default to empty array if undefined
+
       } catch (err) {
         console.error("Failed to fetch data", err);
         setErrorMessage("Failed to load data.");
@@ -248,7 +258,6 @@ const Settings: React.FC = () => {
           <Button variant="contained" color="primary" onClick={handleSave}>
             Save Changes
           </Button>
-          
         </Box>
 
         {/* Accounts Section */}
@@ -472,6 +481,7 @@ const Settings: React.FC = () => {
                 {Array.isArray(linkedConfigurations) && linkedConfigurations.map((config) => (
                   <TableRow key={config._id}>
                     <TableCell>{config.name}</TableCell>
+                    <TableCell>{config.asset}</TableCell>
                     <TableCell>
                       <Button
                         variant="text"
