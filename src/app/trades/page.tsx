@@ -452,7 +452,7 @@ const Trades: React.FC = () => {
         </Box>
 
         {/* TABLE */}
-        <TableContainer>
+        <TableContainer component={Paper}>
           <Table>
             <TableHead>
               <TableRow>

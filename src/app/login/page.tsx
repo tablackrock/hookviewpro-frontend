@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import api from "../../utils/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { Container, Typography, TextField, Button, Paper, Box, Alert } from '@mui/material';
 
 const Login = () => {
   const { login } = useAuth();
@@ -26,51 +27,60 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white">
-      <h1 className="text-4xl font-bold mb-2">HookViewPro</h1>
-      <div className="mt-8 mb-8 text-lg" style={{ padding: "4" }}>
-        <p>Manage your TradingView webhooks effortlessly and connect with MetaTrader 5 for plotting alerts in your trade terminal.</p>
-        <p className="mt-4">We offer trade execution for your TradingView alerts with custom stop loss and take profit levels for each asset and strategy.</p>
-        <p className="mt-4">Support for multiple trading accounts with any MetaTrader 5 broker. We are actively developing our product and features.</p>
-      </div>
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">Login</h2>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+    <Container maxWidth={false} className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white">
+      <Typography variant="h1" component="h1" className="text-4xl font-bold mb-2">HookViewPro</Typography>
+      <Box mt={8} mb={8} textAlign="center">
+        <Typography variant="body1">Manage your TradingView webhooks effortlessly and connect with MetaTrader 5 for plotting alerts in your trade terminal.</Typography>
+        <Typography variant="body1" mt={4}>We offer trade execution for your TradingView alerts with custom stop loss and take profit levels for each asset and strategy.</Typography>
+        <Typography variant="body1" mt={4}>Support for multiple trading accounts with any MetaTrader 5 broker. We are actively developing our product and features.</Typography>
+      </Box>
+      <Paper elevation={3} className="p-8 rounded-lg shadow-lg w-full max-w-md">
+        <Typography variant="h2" component="h2" className="text-3xl font-bold mb-6 text-gray-800">Login</Typography>
+        {error && <Alert severity="error" className="mb-4">{error}</Alert>}
         <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Email</label>
-            <input
+          <Box mb={4}>
+            <TextField
+              label="Email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="border rounded p-2 w-full text-gray-700"
+              variant="outlined"
+              fullWidth
               required
             />
-          </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 mb-2">Password</label>
-            <input
+          </Box>
+          <Box mb={4}>
+            <TextField
+              label="Password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border rounded p-2 w-full text-gray-700"
+              variant="outlined"
+              fullWidth
               required
             />
-          </div>
-          <button
+          </Box>
+          <Button
             type="submit"
-            className="bg-primary text-white px-4 py-2 rounded hover:bg-secondary w-full mb-4"
+            variant="contained"
+            color="primary"
+            fullWidth
+            className="mb-4"
           >
             Login
-          </button>
+          </Button>
         </form>
+      </Paper>
+      <Paper elevation={3} className="p-8 rounded-lg shadow-lg w-full max-w-md mt-4">
+        <Typography variant="h2" component="h2" className="text-3xl font-bold mb-6 text-gray-800">Register</Typography>
+        <Typography variant="body1" mb={4}>Register for beta access now and be the first to experience our new features!</Typography>
         <Link href="/register">
-          <button className="bg-secondary text-white px-4 py-2 rounded hover:bg-primary w-full block text-center">
+          <Button variant="outlined" color="secondary" fullWidth>
             Register
-          </button>
+          </Button>
         </Link>
-      </div>
-    </div>
+      </Paper>
+    </Container>
   );
 };
 
