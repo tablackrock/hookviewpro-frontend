@@ -15,6 +15,21 @@ export function formatDateTime(date: Date): string {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+  // Format date
+  export function formatDate(dateString: string) {
+    try {
+      const options: Intl.DateTimeFormatOptions = {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return new Date(dateString).toLocaleDateString("en-US", options);
+    } catch {
+      return "Invalid Date";
+    }
+  };
+
 /**
  * Capitalizes the first letter of a given string
  * @param value - The string to capitalize
@@ -24,3 +39,9 @@ export function capitalizeFirstLetter(value: string): string {
     if (!value) return value;
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
+//format number with 2 decimal places
+export function formatNumber(num: number) {
+  return num.toFixed(2);
+}
+

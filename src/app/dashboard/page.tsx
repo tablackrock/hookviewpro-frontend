@@ -5,7 +5,7 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import api from "../../utils/api";
 import withAuth from "../../utils/withAuth";
-import { capitalizeFirstLetter,formatDateTime } from "@/utils/utils";
+import { capitalizeFirstLetter,formatDate,formatDateTime } from "@/utils/utils";
 
 import {
   Box,
@@ -187,6 +187,12 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  const getLastAlert = (asset: string,received: string) => {
+    const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.receivedAt !== received && new Date(alert.receivedAt).getTime() < new Date(received).getTime());
+    if (configAlerts.length === 0) return "No alerts received";
+    return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
+  };
+
   const handleFilterChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string }>
   ) => {
@@ -332,7 +338,10 @@ const Dashboard: React.FC = () => {
                     Volume: {alert.payload.volume + " @ " + alert.payload.close|| "Unknown Volume"}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    Received: {new Date(alert.receivedAt).toLocaleString()}
+                    Received: {formatDate(alert.receivedAt)}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Previous: {getLastAlert(alert.payload.asset, alert.receivedAt)}
                   </Typography>
                   <Button
                     size="small"

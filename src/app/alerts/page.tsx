@@ -13,6 +13,7 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
   Snackbar,
   Alert as MuiAlert,
   TextField,
@@ -21,9 +22,11 @@ import {
   MenuItem,
   InputLabel,
   FormControl,
+  Paper
 } from "@mui/material";
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsCircleFill } from "react-icons/bs";
+import { capitalizeFirstLetter,formatDate} from "@/utils/utils";
 
 //
 // TRADINGVIEW EMBED (DARK THEME)
@@ -115,6 +118,16 @@ const Alerts: React.FC = () => {
   const [success, setSuccess] = useState<string>("");
   const [error, setError] = useState<string>("");
 
+  // Sorting
+  const [orderBy, setOrderBy] = useState<keyof Alert["payload"] | "receivedAt">("receivedAt");
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+
+  const handleSort = (property: keyof Alert["payload"] | "receivedAt") => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
   // Global store of notes, if desired
   const [notes, setNotes] = useState<Record<string, string>>({});
 
@@ -162,6 +175,7 @@ const Alerts: React.FC = () => {
           new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()
       );
       setAlerts(sortedAlerts);
+      setSelectedAlert(sortedAlerts[0]);
 
       const strategies = new Set<string>();
       const assets = new Set<string>();
@@ -210,20 +224,7 @@ const Alerts: React.FC = () => {
     }
   }, [selectedAlert, notes]);
 
-  // Format date
-  const formatDate = (dateString: string) => {
-    try {
-      const options: Intl.DateTimeFormatOptions = {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-      };
-      return new Date(dateString).toLocaleDateString("en-US", options);
-    } catch {
-      return "Invalid Date";
-    }
-  };
+
 
   // Filters
   const handleFilterChange = (
@@ -434,10 +435,10 @@ const Alerts: React.FC = () => {
             {selectedAlert ? (
               <>
                 <Typography variant="h6" fontWeight="bold" color="textSecondary">
-                                    Configuration : {selectedAlert.payload.strategy || "Unknown Strategy"} - {selectedAlert.payload.direction || ""}
+                                    Configuration : {selectedAlert.payload.strategy || "Unknown Strategy"} - {capitalizeFirstLetter(selectedAlert.payload.direction) || ""}
                                   </Typography>
                                   <Typography variant="body2" color="textSecondary">
-                                    Asset: {selectedAlert.payload.asset || "Unknown Asset"} : {selectedAlert.status || ""}
+                                    Asset: {selectedAlert.payload.asset || "Unknown Asset"} : {capitalizeFirstLetter(selectedAlert.status) || ""}
                                   </Typography>
                                   <Typography variant="body2" color="textSecondary">
                                     Timeframe: {selectedAlert.payload.timeframe || "Unknown Timeframe"}
@@ -638,18 +639,42 @@ const Alerts: React.FC = () => {
         </Box>
 
         {/* ALERTS TABLE */}
-        <TableContainer>
-          <Table>
+        <TableContainer component={Paper}>
+          <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Strategy</TableCell>
-                <TableCell>Asset</TableCell>
+                <TableCell sortDirection={orderBy === "strategy" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "strategy"}
+                    direction={orderBy === "strategy" ? order : "asc"}
+                    onClick={() => handleSort("strategy")}
+                  >
+                    Strategy
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell sortDirection={orderBy === "asset" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "asset"}
+                    direction={orderBy === "asset" ? order : "asc"}
+                    onClick={() => handleSort("asset")}
+                  >
+                    Asset
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell>Volume</TableCell>
                 <TableCell>Close</TableCell>
                 <TableCell>Direction</TableCell>
                 <TableCell>Timeframe</TableCell>
-                <TableCell>Received At</TableCell>
+                <TableCell sortDirection={orderBy === "receivedAt" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "receivedAt"}
+                    direction={orderBy === "receivedAt" ? order : "asc"}
+                    onClick={() => handleSort("receivedAt")}
+                  >
+                    Received At
+                  </TableSortLabel>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -668,10 +693,10 @@ const Alerts: React.FC = () => {
                     />
                   </TableCell>
                   <TableCell>{alert.payload.asset}</TableCell>
-                  <TableCell>{alert.status}</TableCell>
+                  <TableCell>{capitalizeFirstLetter(alert.status)}</TableCell>
                   <TableCell>{alert.payload.volume}</TableCell>
                   <TableCell>{alert.payload.close}</TableCell>
-                  <TableCell>{alert.payload.direction}</TableCell>
+                  <TableCell>{capitalizeFirstLetter(alert.payload.direction)}</TableCell>
                   <TableCell>{alert.payload.timeframe}</TableCell>
                   <TableCell>{formatDate(alert.receivedAt)}</TableCell>
                 </TableRow>

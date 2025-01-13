@@ -33,6 +33,7 @@ import {
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsCircleFill } from "react-icons/bs";
 import CloseIcon from "@mui/icons-material/Close";
+import { formatDate,capitalizeFirstLetter, formatNumber } from "@/utils/utils";
 
 //
 // -- TRADINGVIEW EMBED (DARK THEME + RESPONSIVE)
@@ -150,7 +151,7 @@ interface Trade {
   payload: TradePayload;
   createdAt: string;
   updatedAt: string;
-  closedAt?: string | null;
+  closedAt: string;
   openPrice?: number | null;
   closePrice?: number | null;
   slPrice?: number | null;
@@ -160,7 +161,7 @@ interface Trade {
   profitLoss:number | null;
   executionId?: number | null;
   currentPrice?:number | null;
-  profitloss?: number | null;
+  profitloss: number;
 }
 
 //
@@ -247,15 +248,7 @@ const Trades: React.FC = () => {
     fetchTrades();
   }, []);
 
-  // Format date
-  const formatDate = (dateString: string | null | undefined) => {
-    if (!dateString) return "";
-    try {
-      return new Date(dateString).toLocaleString();
-    } catch {
-      return "";
-    }
-  };
+
 
   // For status color coding (like Alerts)
   function getStatusColor(status: string) {
@@ -453,7 +446,7 @@ const Trades: React.FC = () => {
 
         {/* TABLE */}
         <TableContainer component={Paper}>
-          <Table>
+          <Table size="small">
             <TableHead>
               <TableRow>
                 <TableCell>Created At</TableCell>
@@ -475,6 +468,7 @@ const Trades: React.FC = () => {
                   style={{
                     cursor: "pointer",
                     backgroundColor: formatRowColor(trade.status, trade.profitloss ?? 0),
+                    margin:0,
                   }}
                   onClick={() => openDrawerForTrade(trade)}
                 >
@@ -483,16 +477,26 @@ const Trades: React.FC = () => {
                     {trade.payload.strategy}
                     <BsCircleFill
                       color={getStatusColor(trade.status)}
-                      style={{ marginLeft: 8 }}
+                      style={{ marginLeft: 4 }}
                     />
                   </TableCell>
                   <TableCell>{trade.payload.asset}</TableCell>
-                  <TableCell>{trade.status} - {formatDate(trade.closedAt)}</TableCell>
-                  <TableCell>{trade.orderType}</TableCell>
-                  <TableCell>{trade.payload.direction}</TableCell>
+                  {trade.closedAt === null ? (
+                    <TableCell>{capitalizeFirstLetter(trade.status)}</TableCell>
+                  ) : (
+                    <TableCell>{capitalizeFirstLetter(trade.status)} - {formatDate(trade.closedAt)}</TableCell>
+                  )}
+                
+                  
+                  <TableCell>{capitalizeFirstLetter(trade.orderType)}</TableCell>
+                  <TableCell>{capitalizeFirstLetter(trade.payload.direction)}</TableCell>
                   <TableCell>{trade.openPrice ?? ""}</TableCell>
                   <TableCell>{trade.closePrice ?? ""}</TableCell>
-                  <TableCell>$ {trade.profitloss ?? ""}</TableCell>
+                  {trade.profitloss === null ? (
+                    <TableCell></TableCell>
+                  ) : (
+                    <TableCell>${formatNumber(trade.profitloss)}</TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
@@ -557,10 +561,10 @@ const Trades: React.FC = () => {
               />
               <CardContent>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  Status: {selectedTrade.status} Profit: ${selectedTrade.profitloss ?? ""}
+                  Status: {capitalizeFirstLetter(selectedTrade.status)} Profit: ${selectedTrade.profitloss ?? ""}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  Order Type: {selectedTrade.orderType}
+                  Order Type: {capitalizeFirstLetter(selectedTrade.orderType)}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   Open Price: {selectedTrade.openPrice ?? "N/A"}

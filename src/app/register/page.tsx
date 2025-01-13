@@ -27,11 +27,11 @@ const Register = () => {
 
   return (
     <Container maxWidth={false} className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white">
-      <Typography variant="h2" component="h2" className="text-4xl font-bold mb-2">HookViewPro</Typography>
-      <Box mt={8} mb={8} textAlign="center">
-        <Typography variant="body1" fontSize="1rem">Manage your TradingView webhooks effortlessly and connect with MetaTrader 5 for plotting alerts in your trade terminal.</Typography>
-        <Typography variant="body1" mt={4} fontSize="1rem">We offer trade execution for your TradingView alerts with custom stop loss and take profit levels for each asset and strategy.</Typography>
-        <Typography variant="body1" mt={4} fontSize="1rem">Support for multiple trading accounts with any MetaTrader 5 broker. We are actively developing our product and features.</Typography>
+      <Typography variant="h3" component="h3" className="text-4xl font-bold">HookViewPro</Typography>
+      <Box mt={4} mb={4} textAlign="center">
+        <Typography variant="body1" fontSize="1rem">1. Manage your TradingView webhooks effortlessly and connect with MetaTrader 5 for plotting alerts in your trade terminal.</Typography>
+        <Typography variant="body1" mt={2} fontSize="1rem">2. We offer trade execution for your TradingView alerts with custom stop loss and take profit levels for each asset and strategy.</Typography>
+        <Typography variant="body1" mt={2} fontSize="1rem">3. Support for multiple trading accounts with any MetaTrader 5 broker. We are actively developing our product and features.</Typography>
       </Box>
       <Grid container spacing={4} justifyContent="center">
         <Grid item xs={12} md={6}>
