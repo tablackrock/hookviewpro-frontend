@@ -193,17 +193,20 @@ const Dashboard: React.FC = () => {
     return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
   };
 
-  const handleFilterChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string }>
-  ) => {
+  const getLastD1Alert = (asset: string,received: string) => {
+    const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.receivedAt !== received && new Date(alert.receivedAt).getTime() < new Date(received).getTime() && alert.payload.timeframe === "1D"); 
+    if (configAlerts.length === 0) return "No alerts received";
+    return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
+  };
+
+  function handleFilterChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string; }>) {
     const { name, value } = e.target;
     //if(name != 'status'){
-      setFilter((prev) => ({ ...prev, [name as string]: value }));
+    setFilter((prev) => ({ ...prev, [name as string]: value }));
     //}else{
     //  setSearchTerm(value);
     //}
-    
-  };
+  }
 
   const handleSearchChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -342,6 +345,9 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Previous: {getLastAlert(alert.payload.asset, alert.receivedAt)}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    Previous Daily: {getLastD1Alert(alert.payload.asset, alert.receivedAt)}
                   </Typography>
                   <Button
                     size="small"
