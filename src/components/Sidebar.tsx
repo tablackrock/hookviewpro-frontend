@@ -45,6 +45,7 @@ const Sidebar: React.FC = () => {
         
         if (response.data) {
           setFxData(response.data);
+          console.log(response.data);
         } else {
           console.error("Failed to fetch FX strength data");
         }
@@ -68,13 +69,18 @@ const Sidebar: React.FC = () => {
     return Object.entries(latest)
       .filter(([key]) => key !== "_id" && key !== "timeframe" && key !== "receivedAt" && key !== "__v")
       .map(([currency, value]) => {
-        const latestValue = typeof value === "number" ? value : parseFloat(value as string);
-        const previousValue =
-          typeof previous[currency] === "number"
-            ? (previous[currency] as number)
-            : parseFloat(previous[currency] as string);
+      const latestValue = typeof value === "number" ? value : parseFloat(value as string);
+      const previousValue =
+        typeof previous[currency] === "number"
+        ? (previous[currency] as number)
+        : parseFloat(previous[currency] as string);
 
-        const change = latestValue - previousValue;
+      const change = latestValue - previousValue;
+
+      return { currency, latestValue, change };
+      })
+      .sort((a, b) => b.latestValue - a.latestValue)
+      .map(({ currency, latestValue, change }) => {
 
         return (
           <Typography

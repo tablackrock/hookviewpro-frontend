@@ -45,3 +45,19 @@ export function formatNumber(num: number) {
   return num.toFixed(2);
 }
 
+//Uppercase first letter and lowercase remaining letters
+export function formatStringLower(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+//check if supertrend is UP and alert direction is BUY , return status color
+
+export function getSupertrendStatusColor(supertrend: string, alertDirection: string) {
+  if (supertrend === "Up" && alertDirection.toUpperCase() === "BUY") {
+    return "green";
+  } else if (supertrend === "Down" && alertDirection.toUpperCase() === "SELL") {
+    return "red";
+  } else {
+    return "gray";
+  }
+}

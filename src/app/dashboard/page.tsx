@@ -5,7 +5,8 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import api from "../../utils/api";
 import withAuth from "../../utils/withAuth";
-import { capitalizeFirstLetter,formatDate,formatDateTime } from "@/utils/utils";
+import { capitalizeFirstLetter,formatDate, formatStringLower,getSupertrendStatusColor } from "@/utils/utils";
+import { BsCircleFill } from "react-icons/bs";
 
 import {
   Box,
@@ -39,6 +40,7 @@ interface Alert {
     ticker: string;
     interval: string;
     status: string;
+    volume: number;
     [key: string]: any;
   };
   status: string;
@@ -222,10 +224,35 @@ const Dashboard: React.FC = () => {
     return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
   };
 
+  //check if volume is above average return volumeColor
+  const isAboveAverageVolume = (asset: string, volume: number, timeframe: string) => {
+    const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.payload.timeframe === timeframe);
+    if (configAlerts.length === 0) return "blue";
+    //calculate average volume
+    let totalVolume: number = 0;
+    configAlerts.forEach(alert => {
+      totalVolume += Number(alert.payload.volume);
+    });
+    const averageVolume = totalVolume / configAlerts.length;
+    //console.log("Total Volume : " + totalVolume + " Total Alerts :" + configAlerts.length + " for " + asset + " Average Volume: " + averageVolume + " " + "Volume: " + volume);
+    if (volume > averageVolume) {
+      return "green";
+    } else {
+      return "red";
+    }
+  };
+
+
   const getSuperTrend = (asset: string,timeframe: string) => {
+    var changed;
     const superTrend = superTrends.filter(superTrends => superTrends.asset === asset);
     if (superTrend.length === 0) return "No SuperTrend";
-    return superTrend[0].trend + " - " + superTrend[0].changed;
+    if (superTrend[0].changed ==="false"){
+      changed = "";
+    }else{
+      changed = " - New Trend"
+    }
+    return formatStringLower(superTrend[0].trend) + changed;
   };
 
 
@@ -355,11 +382,18 @@ const Dashboard: React.FC = () => {
 
         <Grid container spacing={4}>
           {filteredAlerts.map((alert) => (
+            
             <Grid item xs={12} md={3} lg={3} key={alert._id}>
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="h6" fontWeight="bold">
                     Strategy: {alert.payload.strategy || "Unknown Strategy"} - {capitalizeFirstLetter(alert.payload.direction) || ""}
+                    <BsCircleFill
+                    size={12}
+                    className="inline-block"
+                    color={getSupertrendStatusColor(getSuperTrend(alert.payload.asset,alert.payload.timeframe).split("-")[0].trim(),alert.payload.direction)}
+                    style={{ marginLeft: 4 }}
+                     />
                   </Typography>
                   <Typography variant="body2">
                     Asset: {alert.payload.asset || "Unknown Asset"} : {capitalizeFirstLetter(alert.status) || ""}
@@ -369,6 +403,15 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography variant="body2">
                     Volume: {alert.payload.volume + " @ " + alert.payload.close|| "Unknown Volume"}
+                    <BsCircleFill
+                    size={12}
+                    className="inline-block"
+                    color={isAboveAverageVolume(alert.payload.asset,alert.payload.volume,alert.payload.timeframe)}
+                    style={{ marginLeft: 4 }}
+                     />
+                  </Typography>
+                  <Typography variant="body2">
+                    SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Received: {formatDate(alert.receivedAt)}
@@ -379,9 +422,7 @@ const Dashboard: React.FC = () => {
                   <Typography variant="body2" color="textSecondary">
                     Previous Daily: {getLastD1Alert(alert.payload.asset, alert.receivedAt)}
                   </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)}
-                  </Typography>
+                  
                   <Button
                     size="small"
                     variant="outlined"
