@@ -256,13 +256,13 @@ const Trades: React.FC = () => {
       case "wait":
         return "gray";
       case "open":
-        return "green";
+        return "blue";
       case "pending":
         return "blue";
       case "closed":
         return "silver";
       case "TP":
-        return "orange";
+        return "green";
       case "SL":
         return "red";
       default:

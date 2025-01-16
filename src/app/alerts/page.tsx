@@ -282,6 +282,18 @@ const Alerts: React.FC = () => {
     }
   };
 
+    const getLastAlert = (asset: string,received: string) => {
+      const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.receivedAt !== received && new Date(alert.receivedAt).getTime() < new Date(received).getTime());
+      if (configAlerts.length === 0) return "No alerts received";
+      return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
+    };
+  
+    const getLastD1Alert = (asset: string,received: string) => {
+      const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.receivedAt !== received && new Date(alert.receivedAt).getTime() < new Date(received).getTime() && alert.payload.timeframe === "1D"); 
+      if (configAlerts.length === 0) return "No alerts received";
+      return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
+    };
+
   // --------------------------------------
   // Status management
   // --------------------------------------
@@ -675,6 +687,8 @@ const Alerts: React.FC = () => {
                     Received At
                   </TableSortLabel>
                 </TableCell>
+                <TableCell>Previous Alert</TableCell>
+                <TableCell>Previous D1 Alert</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -699,6 +713,8 @@ const Alerts: React.FC = () => {
                   <TableCell>{capitalizeFirstLetter(alert.payload.direction)}</TableCell>
                   <TableCell>{alert.payload.timeframe}</TableCell>
                   <TableCell>{formatDate(alert.receivedAt)}</TableCell>
+                  <TableCell>{getLastAlert(alert.payload.asset,alert.receivedAt)}</TableCell>
+                  <TableCell>{getLastD1Alert(alert.payload.asset,alert.receivedAt)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

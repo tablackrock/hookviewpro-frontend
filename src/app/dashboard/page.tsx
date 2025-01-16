@@ -45,8 +45,17 @@ interface Alert {
   receivedAt: string;
 }
 
+interface SuperTrends{
+  _id: string;
+  asset: string;
+  changed: string;
+  trend: string;
+  timeframe: string;
+}
+
 const Dashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [superTrends, setSuperTrends] = useState<SuperTrends[]>([]);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [filter, setFilter] = useState({
@@ -74,6 +83,19 @@ const Dashboard: React.FC = () => {
 
   // Fetch alerts from API
   const [uniqueDirections, setUniqueDirections] = useState<string[]>([]);
+
+  const fetchSuperTrends = async () => {
+    try {
+      const response = await api.get("api/data/supertrend");
+      const fetchedSuperTrends = response.data;
+  
+      setSuperTrends(fetchedSuperTrends);
+  
+    } catch (err) {
+      console.error("Failed to fetch superTrends", err);
+      setError("Failed to load supertTrends.");
+    }
+  }
 
   const fetchAlerts = async () => {
     try {
@@ -113,6 +135,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAlerts();
+    fetchSuperTrends();
   }, []);
 
   const filteredAlerts = alerts.filter((alert) => {
@@ -198,6 +221,13 @@ const Dashboard: React.FC = () => {
     if (configAlerts.length === 0) return "No alerts received";
     return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
   };
+
+  const getSuperTrend = (asset: string,timeframe: string) => {
+    const superTrend = superTrends.filter(superTrends => superTrends.asset === asset);
+    if (superTrend.length === 0) return "No SuperTrend";
+    return superTrend[0].trend + " - " + superTrend[0].changed;
+  };
+
 
   function handleFilterChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string; }>) {
     const { name, value } = e.target;
@@ -348,6 +378,9 @@ const Dashboard: React.FC = () => {
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Previous Daily: {getLastD1Alert(alert.payload.asset, alert.receivedAt)}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary">
+                    SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)}
                   </Typography>
                   <Button
                     size="small"

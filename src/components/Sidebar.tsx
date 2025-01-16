@@ -42,11 +42,14 @@ const Sidebar: React.FC = () => {
     const fetchFxData = async () => {
       try {
         const response = await api.get("api/data/fxs");
+        
         if (response.data) {
           setFxData(response.data);
         } else {
           console.error("Failed to fetch FX strength data");
         }
+
+
       } catch (error) {
         console.error("Error fetching FX strength data:", error);
       }
