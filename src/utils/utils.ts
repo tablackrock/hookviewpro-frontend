@@ -61,3 +61,14 @@ export function getSupertrendStatusColor(supertrend: string, alertDirection: str
     return "gray";
   }
 }
+
+//check if supertrend is UP and superTrendDaily is UP, return status color
+export function getSupertrendDailyStatusColor(supertrend: string, supertrendDaily: string) {
+  if (supertrend === "Up" && supertrendDaily === "Up") {
+    return "green";
+  } else if (supertrend === "Down" && supertrendDaily === "Down") {
+    return "red";
+  } else {
+    return "gray";
+  }
+}

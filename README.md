@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+HookViewPro is a sophisticated webhook receiver and manager designed specifically for TradingView indicators and strategies created in Pinescript. With HookViewPro, you can configure a webhook address to receive alerts directly from TradingView. Once received, these alerts can be managed and processed further. You have the option to receive alerts in MetaTrader 5 and enable straight-through order execution using our free MetaTrader 5 Expert Advisor. This seamless integration allows for efficient and automated trading operations.
 
 ## Getting Started
 
@@ -14,9 +14,9 @@ pnpm dev
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [https://hookviewpro.com](https://hookviewpro.com) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

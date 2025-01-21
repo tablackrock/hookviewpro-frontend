@@ -5,7 +5,7 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import api from "../../utils/api";
 import withAuth from "../../utils/withAuth";
-import { capitalizeFirstLetter,formatDate, formatStringLower,getSupertrendStatusColor } from "@/utils/utils";
+import { capitalizeFirstLetter,formatDate, formatStringLower,getSupertrendStatusColor, getSupertrendDailyStatusColor } from "@/utils/utils";
 import { BsCircleFill } from "react-icons/bs";
 
 import {
@@ -58,6 +58,7 @@ interface SuperTrends{
 const Dashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [superTrends, setSuperTrends] = useState<SuperTrends[]>([]);
+  const [superTrendsDaily, setSuperTrendsDaily] = useState<SuperTrends[]>([]);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [filter, setFilter] = useState({
@@ -92,6 +93,19 @@ const Dashboard: React.FC = () => {
       const fetchedSuperTrends = response.data;
   
       setSuperTrends(fetchedSuperTrends);
+  
+    } catch (err) {
+      console.error("Failed to fetch superTrends", err);
+      setError("Failed to load supertTrends.");
+    }
+  }
+
+  const fetchSuperTrendsDaily = async () => {
+    try {
+      const response = await api.get("api/data/superTrendDaily");
+      const fetchedSuperTrends = response.data;
+  
+      setSuperTrendsDaily(fetchedSuperTrends);
   
     } catch (err) {
       console.error("Failed to fetch superTrends", err);
@@ -138,6 +152,7 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     fetchAlerts();
     fetchSuperTrends();
+    fetchSuperTrendsDaily();
   }, []);
 
   const filteredAlerts = alerts.filter((alert) => {
@@ -254,6 +269,18 @@ const Dashboard: React.FC = () => {
     }
     return formatStringLower(superTrend[0].trend) + changed;
   };
+
+  const getSuperTrendDaily = (asset: string) => {
+    var changed;
+    const superTrend = superTrendsDaily.filter(superTrends => superTrends.asset === asset);
+    if (superTrend.length === 0) return "No SuperTrend";
+    if (superTrend[0].changed ==="false"){
+      changed = "";
+    }else{
+      changed = " - New Trend"
+    }
+    return formatStringLower(superTrend[0].trend) + changed;
+  }
 
 
   function handleFilterChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string; }>) {
@@ -411,7 +438,13 @@ const Dashboard: React.FC = () => {
                      />
                   </Typography>
                   <Typography variant="body2">
-                    SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)}
+                    SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)} Daily: {getSuperTrendDaily(alert.payload.asset)}
+                    <BsCircleFill
+                    size={12}
+                    className="inline-block"
+                    color={getSupertrendDailyStatusColor(getSuperTrend(alert.payload.asset,alert.receivedAt).split("-")[0].trim(),getSuperTrendDaily(alert.payload.asset).split("-")[0].trim())}
+                    style={{ marginLeft: 4 }}
+                     />
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Received: {formatDate(alert.receivedAt)}
