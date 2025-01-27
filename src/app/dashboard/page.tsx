@@ -55,10 +55,20 @@ interface SuperTrends{
   timeframe: string;
 }
 
+interface Rsi{
+  _id: string;
+  asset: string;
+  condition: string;
+  rsi: number;
+  timeframe: string;
+}
+
+
 const Dashboard: React.FC = () => {
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [superTrends, setSuperTrends] = useState<SuperTrends[]>([]);
   const [superTrendsDaily, setSuperTrendsDaily] = useState<SuperTrends[]>([]);
+  const [rsis, setRsis] = useState<Rsi[]>([]);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [filter, setFilter] = useState({
@@ -113,6 +123,19 @@ const Dashboard: React.FC = () => {
     }
   }
 
+  const fetchRsi = async () => {
+    try {
+      const response = await api.get("api/data/rsi");
+      const fetchedRsi = response.data;
+  
+      setRsis(fetchedRsi);
+  
+    } catch (err) {
+      console.error("Failed to fetch Rsi", err);
+      setError("Failed to load Rsi.");
+    }
+  }
+
   const fetchAlerts = async () => {
     try {
       const response = await api.get("/api/alerts?limit=50");
@@ -151,6 +174,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     fetchAlerts();
+    fetchRsi();
     fetchSuperTrends();
     fetchSuperTrendsDaily();
   }, []);
@@ -281,6 +305,12 @@ const Dashboard: React.FC = () => {
     }
     return formatStringLower(superTrend[0].trend) + changed;
   }
+
+  const getRsi = (asset: string,timeframe: string) => {
+    const rsi = rsis.filter(rsi => rsi.asset === asset);
+    if (rsi.length === 0) return "No Rsi";
+    return rsi[0].rsi + " " + rsi[0].condition;
+  };
 
 
   function handleFilterChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string; }>) {
@@ -445,6 +475,9 @@ const Dashboard: React.FC = () => {
                     color={getSupertrendDailyStatusColor(getSuperTrend(alert.payload.asset,alert.receivedAt).split("-")[0].trim(),getSuperTrendDaily(alert.payload.asset).split("-")[0].trim())}
                     style={{ marginLeft: 4 }}
                      />
+                  </Typography>
+                  <Typography variant="body2">
+                    RSI: {getRsi(alert.payload.asset, alert.payload.timeframe)}
                   </Typography>
                   <Typography variant="body2" color="textSecondary">
                     Received: {formatDate(alert.receivedAt)}

@@ -14,6 +14,9 @@ const Home = () => {
       <p className="text-lg mb-6">
         Support for multiple trading accounts with any MetaTrader 5 broker. We are actively developing our product and features.
       </p>
+      <p className="text-lg mb-6">
+        Offering TradingView webhook alerts via Telegram, Discord, and Email.
+      </p>
       <div className="flex gap-4">
         <Link href="/login" legacyBehavior>
           <a className="bg-primary text-white px-6 py-2 rounded hover:bg-secondary">
