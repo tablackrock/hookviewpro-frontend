@@ -337,7 +337,7 @@ const Dashboard: React.FC = () => {
     .slice(0, 5);
 
   const recentSuperTrends = superTrends.filter(trend => {
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const twelveHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000);
     return trend.changed === "true" && new Date(trend.receivedAt) > twelveHoursAgo;
   });
 
@@ -351,7 +351,7 @@ const Dashboard: React.FC = () => {
           <Box position="sticky" top={0} zIndex={1} bgcolor="#ffffff" boxShadow={1} p={2}>
             <Header />
 
-            <Box display="flex" gap={2} mb={2} flexWrap="wrap">
+            <Box display="flex" gap={1} mb={2} flexWrap="wrap">
               <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
 
             <Typography variant="h5" fontWeight="bold" mb={3} color="textSecondary">
@@ -461,11 +461,11 @@ const Dashboard: React.FC = () => {
             </Box>
           </Box>
 
-          <Grid container spacing={3}>
+          <Grid container spacing={1}>
             {filteredAlerts.map((alert) => (
               <Grid item xs={12} md={6} lg={4} key={alert._id}>
                 <Card variant="outlined" sx={{ boxShadow: 3, bgcolor: "#ffffff", borderRadius: 2 }}>
-                  <CardContent sx={{ p: 2 }}>
+                  <CardContent sx={{ p: 1 }}>
                     <Typography variant="h6" fontWeight="bold" color="textPrimary" gutterBottom>
                       Strategy: {alert.payload.strategy || "Unknown Strategy"} - {capitalizeFirstLetter(alert.payload.direction) || ""}
                       <BsCircleFill
@@ -584,9 +584,9 @@ const Dashboard: React.FC = () => {
           </Snackbar>
         </Box>
 
-        <Box width={300} ml={3} sx={{ bgcolor: "#1e1e2f", boxShadow: 3, borderRadius: 0, p: 1, color: "#fff" }}>
+        <Box width={400} ml={2} sx={{ position: "sticky", top: 0, bgcolor: "#1e1e2f", boxShadow: 3, borderRadius: 2, p:1, color: "#fff" }}>
           <Box mb={3}>
-            <Typography variant="h4" fontWeight="bold" color="textWhite" gutterBottom>
+            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
               Daily Alerts - {recentDailyAlerts.length}
             </Typography>
             <List>
@@ -602,7 +602,7 @@ const Dashboard: React.FC = () => {
           </Box>
 
           <Box mb={3}>
-            <Typography variant="h4" fontWeight="bold" color="textWhite" gutterBottom>
+            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
               SuperTrend - {recentSuperTrends.length}
             </Typography>
             <List>
@@ -618,7 +618,7 @@ const Dashboard: React.FC = () => {
           </Box>
 
           <Box>
-            <Typography variant="h4" fontWeight="bold" color="textWhite" gutterBottom>
+            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
               RSI Alerts: {filteredRsi.length}
             </Typography>
             <List>

@@ -217,7 +217,7 @@ const Trades: React.FC = () => {
   };
 
   // Sorting
-  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [order, setOrder] = useState<"asc" | "desc">("desc");
   const [orderBy, setOrderBy] = useState<keyof Trade>("createdAt");
 
   const handleRequestSort = (property: keyof Trade) => {
@@ -491,7 +491,7 @@ const Trades: React.FC = () => {
                 <TableCell sortDirection={orderBy === "createdAt" ? order : false}>
                   <TableSortLabel
                     active={orderBy === "createdAt"}
-                    direction={orderBy === "createdAt" ? order : "asc"}
+                    direction={orderBy === "createdAt" ? order : "desc"}
                     onClick={() => handleRequestSort("createdAt")}
                   >
                     Created At
@@ -559,7 +559,7 @@ const Trades: React.FC = () => {
             </TableBody>
           </Table>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25]}
+            rowsPerPageOptions={[10, 15, 25]}
             component="div"
             count={filteredTrades.length}
             rowsPerPage={rowsPerPage}
