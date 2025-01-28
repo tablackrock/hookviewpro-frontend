@@ -586,7 +586,7 @@ const Dashboard: React.FC = () => {
 
         <Box width={300} ml={3} sx={{ bgcolor: "#1e1e2f", boxShadow: 3, borderRadius: 0, p: 1, color: "#fff" }}>
           <Box mb={3}>
-            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
+            <Typography variant="h4" fontWeight="bold" color="textWhite" gutterBottom>
               Daily Alerts - {recentDailyAlerts.length}
             </Typography>
             <List>
@@ -602,7 +602,7 @@ const Dashboard: React.FC = () => {
           </Box>
 
           <Box mb={3}>
-            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
+            <Typography variant="h4" fontWeight="bold" color="textWhite" gutterBottom>
               SuperTrend - {recentSuperTrends.length}
             </Typography>
             <List>
@@ -618,7 +618,7 @@ const Dashboard: React.FC = () => {
           </Box>
 
           <Box>
-            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
+            <Typography variant="h4" fontWeight="bold" color="textWhite" gutterBottom>
               RSI Alerts: {filteredRsi.length}
             </Typography>
             <List>
