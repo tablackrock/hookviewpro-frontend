@@ -5,7 +5,7 @@ import Header from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import api from "../../utils/api";
 import withAuth from "../../utils/withAuth";
-import { capitalizeFirstLetter,formatDate, formatStringLower,getSupertrendStatusColor, getSupertrendDailyStatusColor } from "@/utils/utils";
+import { capitalizeFirstLetter,formatDate, formatStringLower,getSupertrendStatusColor, getSupertrendDailyStatusColor,formatDateAgo} from "@/utils/utils";
 import { BsCircleFill } from "react-icons/bs";
 
 import {
@@ -26,6 +26,9 @@ import {
   Alert,
   Grid,
   InputAdornment,
+  List,
+  ListItem,
+  ListItemText,
 } from "@mui/material";
 import { SelectChangeEvent } from "@mui/material/Select";
 import { AiFillEdit, AiFillDelete, AiOutlineCopy, AiFillPlusCircle } from "react-icons/ai";
@@ -53,6 +56,7 @@ interface SuperTrends{
   changed: string;
   trend: string;
   timeframe: string;
+  receivedAt: string;
 }
 
 interface Rsi{
@@ -173,10 +177,10 @@ const Dashboard: React.FC = () => {
   
 
   useEffect(() => {
-    fetchAlerts();
     fetchRsi();
     fetchSuperTrends();
     fetchSuperTrendsDaily();
+    fetchAlerts();
   }, []);
 
   const filteredAlerts = alerts.filter((alert) => {
@@ -254,13 +258,13 @@ const Dashboard: React.FC = () => {
   const getLastAlert = (asset: string,received: string) => {
     const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.receivedAt !== received && new Date(alert.receivedAt).getTime() < new Date(received).getTime());
     if (configAlerts.length === 0) return "No alerts received";
-    return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
+    return formatDateAgo(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
   };
 
   const getLastD1Alert = (asset: string,received: string) => {
     const configAlerts = alerts.filter(alert => alert.payload.asset === asset && alert.receivedAt !== received && new Date(alert.receivedAt).getTime() < new Date(received).getTime() && alert.payload.timeframe === "1D"); 
     if (configAlerts.length === 0) return "No alerts received";
-    return formatDate(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
+    return formatDateAgo(configAlerts[0].receivedAt) + " - " + capitalizeFirstLetter(configAlerts[0].payload.direction) + " - " + configAlerts[0].payload.timeframe;
   };
 
   //check if volume is above average return volumeColor
@@ -328,229 +332,307 @@ const Dashboard: React.FC = () => {
     setSearchTerm(e.target.value);
   };
 
+  const recentDailyAlerts = alerts
+    .filter(alert => alert.payload.timeframe === "1D")
+    .slice(0, 5);
+
+  const recentSuperTrends = superTrends.filter(trend => {
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    return trend.changed === "true" && new Date(trend.receivedAt) > twelveHoursAgo;
+  });
+
+  const filteredRsi = rsis.filter(rsi => rsi.rsi > 60 || rsi.rsi < 40);
+
   return (
     <Box display="flex">
       <Sidebar />
-      <Box component="main" flexGrow={1} p={1} bgcolor="#f4f6f8">
-        <Header />
-        <Typography variant="h5" fontWeight="bold" mb={1} color="textSecondary">
-          Dashboard - {filteredAlerts.length} Alerts
-        </Typography>
+      <Box component="main" flexGrow={1} p={3} bgcolor="#f4f6f8" display="flex">
+        <Box flexGrow={1}>
+          <Box position="sticky" top={0} zIndex={1} bgcolor="#ffffff" boxShadow={1} p={2}>
+            <Header />
 
-        <Box display="flex" gap={2} mb={4}>
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Strategy</InputLabel>
-            <Select
-              name="strategy"
-              value={filter.strategy}
-              onChange={handleFilterChange as any}
-              label="Strategy"
-            >
-              <MenuItem value="">All</MenuItem>
-              {uniqueStrategies.map((strategy) => (
-                <MenuItem key={strategy} value={strategy}>
-                  {strategy}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <Box display="flex" gap={2} mb={2} flexWrap="wrap">
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
 
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Asset</InputLabel>
-            <Select
-              name="asset"
-              value={filter.asset}
-              onChange={handleFilterChange as any}
-              label="Asset"
-            >
-              <MenuItem value="">All</MenuItem>
-              {uniqueAssets.map((asset) => (
-                <MenuItem key={asset} value={asset}>
-                  {asset}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <Typography variant="h5" fontWeight="bold" mb={3} color="textSecondary">
+              Dashboard - {filteredAlerts.length} Alerts
+            </Typography>
+            </FormControl>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Strategy</InputLabel>
+                <Select
+                  name="strategy"
+                  value={filter.strategy}
+                  onChange={handleFilterChange as any}
+                  label="Strategy"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {uniqueStrategies.map((strategy) => (
+                    <MenuItem key={strategy} value={strategy}>
+                      {strategy}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Direction</InputLabel>
-            <Select
-              name="direction"
-              value={filter.direction}
-              onChange={handleFilterChange as any}
-              label="Direction"
-            >
-              <MenuItem value="">All</MenuItem>
-              {uniqueDirections.map((direction) => (
-                <MenuItem key={direction} value={direction}>
-                  {direction}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 90 }}>
+                <InputLabel>Asset</InputLabel>
+                <Select
+                  name="asset"
+                  value={filter.asset}
+                  onChange={handleFilterChange as any}
+                  label="Asset"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {uniqueAssets.map((asset) => (
+                    <MenuItem key={asset} value={asset}>
+                      {asset}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
-            <Select
-              name="status"
-              value={filter.status}
-              onChange={handleFilterChange as any}
-              label="Status"
-            >
-              <MenuItem value="">All</MenuItem>
-              {uniqueStatus.map((status) => (
-                <MenuItem key={status} value={status}>
-                  {status}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+                <InputLabel>Direction</InputLabel>
+                <Select
+                  name="direction"
+                  value={filter.direction}
+                  onChange={handleFilterChange as any}
+                  label="Direction"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {uniqueDirections.map((direction) => (
+                    <MenuItem key={direction} value={direction}>
+                      {direction}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Timeframe</InputLabel>
-            <Select
-              name="timeframe"
-              value={filter.timeframe}
-              onChange={handleFilterChange as any}
-              label="Timeframe"
-            >
-              <MenuItem value="">All</MenuItem>
-              <MenuItem value="1m">1 Minute</MenuItem>
-              <MenuItem value="5m">5 Minutes</MenuItem>
-              <MenuItem value="15m">15 Minutes</MenuItem>
-              <MenuItem value="h1">1 Hour</MenuItem>
-              <MenuItem value="h4">4 Hours</MenuItem>
-              <MenuItem value="1d">1 Day</MenuItem>
-            </Select>
-          </FormControl>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 100 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  name="status"
+                  value={filter.status}
+                  onChange={handleFilterChange as any}
+                  label="Status"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  {uniqueStatus.map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {status}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
 
-          <TextField
-            size="small"
-            placeholder="Search..."
-            variant="outlined"
-            fullWidth
-            value={searchTerm}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: <InputAdornment position="start">🔍</InputAdornment>,
-            }}
-          />
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 120 }}>
+                <InputLabel>Timeframe</InputLabel>
+                <Select
+                  name="timeframe"
+                  value={filter.timeframe}
+                  onChange={handleFilterChange as any}
+                  label="Timeframe"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="1m">1 Minute</MenuItem>
+                  <MenuItem value="5m">5 Minutes</MenuItem>
+                  <MenuItem value="15m">15 Minutes</MenuItem>
+                  <MenuItem value="h1">1 Hour</MenuItem>
+                  <MenuItem value="h4">4 Hours</MenuItem>
+                  <MenuItem value="1d">1 Day</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
+                <TextField
+                size="small"
+                placeholder="Search..."
+                variant="outlined"
+                value={searchTerm}
+                onChange={handleSearchChange}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">🔍</InputAdornment>,
+                }}
+                sx={{ minWidth: 150 }}
+              />
+              </FormControl>
+
+              
+            </Box>
+          </Box>
+
+          <Grid container spacing={3}>
+            {filteredAlerts.map((alert) => (
+              <Grid item xs={12} md={6} lg={4} key={alert._id}>
+                <Card variant="outlined" sx={{ boxShadow: 3, bgcolor: "#ffffff", borderRadius: 2 }}>
+                  <CardContent sx={{ p: 2 }}>
+                    <Typography variant="h6" fontWeight="bold" color="textPrimary" gutterBottom>
+                      Strategy: {alert.payload.strategy || "Unknown Strategy"} - {capitalizeFirstLetter(alert.payload.direction) || ""}
+                      <BsCircleFill
+                        size={12}
+                        className="inline-block"
+                        color={getSupertrendStatusColor(getSuperTrend(alert.payload.asset,alert.payload.timeframe).split("-")[0].trim(),alert.payload.direction)}
+                        style={{ marginLeft: 4 }}
+                      />
+                    </Typography>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="textSecondary">
+                          Asset: {alert.payload.asset || "Unknown Asset"} : {capitalizeFirstLetter(alert.status) || ""}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Timeframe: {alert.payload.timeframe || "Unknown Timeframe"}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Volume: {alert.payload.volume + "@"  + alert.payload.close || "Unknown Volume"}
+                          <BsCircleFill
+                            size={12}
+                            className="inline-block"
+                            color={isAboveAverageVolume(alert.payload.asset,alert.payload.volume,alert.payload.timeframe)}
+                            style={{ marginLeft: 4 }}
+                          />
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)} Daily: {getSuperTrendDaily(alert.payload.asset)}
+                          <BsCircleFill
+                            size={12}
+                            className="inline-block"
+                            color={getSupertrendDailyStatusColor(getSuperTrend(alert.payload.asset,alert.receivedAt).split("-")[0].trim(),getSuperTrendDaily(alert.payload.asset).split("-")[0].trim())}
+                            style={{ marginLeft: 4 }}
+                          />
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          RSI: {getRsi(alert.payload.asset, alert.payload.timeframe)}
+                        </Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="body2" color="textSecondary">
+                          Received: {formatDate(alert.receivedAt)}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Previous: {getLastAlert(alert.payload.asset, alert.receivedAt)}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Previous Daily: {getLastD1Alert(alert.payload.asset, alert.receivedAt)}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                    
+                    <Box mt={2} display="flex" justifyContent="space-between" flexWrap="wrap">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        href={`https://www.tradingview.com/chart?symbol=${alert.payload.asset}&interval=${intervalMapping[alert.payload.timeframe.toLowerCase()]}`}
+                        target="_new"
+                        sx={{ mb: 1 }}
+                      >
+                        TradingView
+                      </Button>
+                      
+                      <Button
+                        size="small"
+                        variant={alert.status === "active" ? "contained" : "outlined"}
+                        color="secondary"
+                        onClick={() => handleActive(alert._id)}
+                        sx={{ mb: 1 }}
+                      >
+                        Active
+                      </Button>
+                      <Button
+                        size="small"
+                        variant={alert.status === "trade" ? "contained" : "outlined"}
+                        color="success"
+                        onClick={() => handleTrade(alert._id)}
+                        sx={{ mb: 1 }}
+                      >
+                        Trade
+                      </Button>
+                      <Button
+                        size="small"
+                        variant={alert.status === "rejected" ? "contained" : "outlined"}
+                        color="error"
+                        onClick={() => handleReject(alert._id)}
+                        sx={{ mb: 1 }}
+                      >
+                        Reject
+                      </Button>
+                      <Button
+                        size="small"
+                        variant={alert.status === "archived" ? "contained" : "outlined"}
+                        color="warning"
+                        onClick={() => handleArchive(alert._id)}
+                        sx={{ mb: 1 }}
+                      >
+                        Archive
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          <Snackbar
+            open={Boolean(error)}
+            autoHideDuration={3000}
+            onClose={() => setError("")}
+          >
+            <Alert severity="error" onClose={() => setError("")}>
+              {error}
+            </Alert>
+          </Snackbar>
         </Box>
 
-        <Grid container spacing={4}>
-          {filteredAlerts.map((alert) => (
-            
-            <Grid item xs={12} md={3} lg={3} key={alert._id}>
-              <Card variant="outlined">
-                <CardContent>
-                  <Typography variant="h6" fontWeight="bold">
-                    Strategy: {alert.payload.strategy || "Unknown Strategy"} - {capitalizeFirstLetter(alert.payload.direction) || ""}
-                    <BsCircleFill
-                    size={12}
-                    className="inline-block"
-                    color={getSupertrendStatusColor(getSuperTrend(alert.payload.asset,alert.payload.timeframe).split("-")[0].trim(),alert.payload.direction)}
-                    style={{ marginLeft: 4 }}
-                     />
-                  </Typography>
-                  <Typography variant="body2">
-                    Asset: {alert.payload.asset || "Unknown Asset"} : {capitalizeFirstLetter(alert.status) || ""}
-                  </Typography>
-                  <Typography variant="body2">
-                    Timeframe: {alert.payload.timeframe || "Unknown Timeframe"}
-                  </Typography>
-                  <Typography variant="body2">
-                    Volume: {alert.payload.volume + " @ " + alert.payload.close|| "Unknown Volume"}
-                    <BsCircleFill
-                    size={12}
-                    className="inline-block"
-                    color={isAboveAverageVolume(alert.payload.asset,alert.payload.volume,alert.payload.timeframe)}
-                    style={{ marginLeft: 4 }}
-                     />
-                  </Typography>
-                  <Typography variant="body2">
-                    SuperTrend: {getSuperTrend(alert.payload.asset, alert.receivedAt)} Daily: {getSuperTrendDaily(alert.payload.asset)}
-                    <BsCircleFill
-                    size={12}
-                    className="inline-block"
-                    color={getSupertrendDailyStatusColor(getSuperTrend(alert.payload.asset,alert.receivedAt).split("-")[0].trim(),getSuperTrendDaily(alert.payload.asset).split("-")[0].trim())}
-                    style={{ marginLeft: 4 }}
-                     />
-                  </Typography>
-                  <Typography variant="body2">
-                    RSI: {getRsi(alert.payload.asset, alert.payload.timeframe)}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Received: {formatDate(alert.receivedAt)}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Previous: {getLastAlert(alert.payload.asset, alert.receivedAt)}
-                  </Typography>
-                  <Typography variant="body2" color="textSecondary">
-                    Previous Daily: {getLastD1Alert(alert.payload.asset, alert.receivedAt)}
-                  </Typography>
-                  
-                  <Button
-                    size="small"
-                    variant="outlined"
-                    color="primary"
-                    href={`https://www.tradingview.com/chart?symbol=${alert.payload.asset}&interval=${intervalMapping[alert.payload.timeframe.toLowerCase()]}`}
-                    target="_new"
-                    sx={{ mt: 1 }}
-                  >
-                    TradingView
-                  </Button>
-                  
-                  <Button
-                    size="small"
-                    variant={alert.status === "active" ? "contained" : "outlined"}
-                    color="secondary"
-                    onClick={() => handleActive(alert._id)}
-                    sx={{ mt: 1, ml: 1 }}
-                  >
-                    Active
-                  </Button>
-                  <Button
-                    size="small"
-                    variant={alert.status === "trade" ? "contained" : "outlined"}
-                    color="success"
-                    onClick={() => handleTrade(alert._id)}
-                    sx={{ mt: 1, ml: 1 }}
-                  >
-                    Trade
-                  </Button>
-                  <Button
-                    size="small"
-                    variant={alert.status === "rejected" ? "contained" : "outlined"}
-                    color="error"
-                    onClick={() => handleReject(alert._id)}
-                    sx={{ mt: 1, ml: 1 }}
-                  >
-                    Reject
-                  </Button>
-                  <Button
-                    size="small"
-                    variant={alert.status === "archived" ? "contained" : "outlined"}
-                    color="warning"
-                    onClick={() => handleArchive(alert._id)}
-                    sx={{ mt: 1, ml: 1 }}
-                  >
-                    Archive
-                  </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+        <Box width={300} ml={3} sx={{ bgcolor: "#1e1e2f", boxShadow: 3, borderRadius: 0, p: 1, color: "#fff" }}>
+          <Box mb={3}>
+            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
+              Daily Alerts - {recentDailyAlerts.length}
+            </Typography>
+            <List>
+              {recentDailyAlerts.map((alert) => (
+                <ListItem key={alert._id} sx={{ mb: 1, bgcolor: "#2e2e3e", borderRadius: 1 }}>
+                  <ListItemText
+                    primary={`${alert.payload.asset} - ${capitalizeFirstLetter(alert.payload.direction)} - ${formatDateAgo(alert.receivedAt)}`}
+                    primaryTypographyProps={{ color: "#fff" }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
 
-        <Snackbar
-          open={Boolean(error)}
-          autoHideDuration={3000}
-          onClose={() => setError("")}
-        >
-          <Alert severity="error" onClose={() => setError("")}>
-            {error}
-          </Alert>
-        </Snackbar>
+          <Box mb={3}>
+            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
+              SuperTrend - {recentSuperTrends.length}
+            </Typography>
+            <List>
+              {recentSuperTrends.map((trend) => (
+                <ListItem key={trend._id} sx={{ mb: 1, bgcolor: "#2e2e3e", borderRadius: 1 }}>
+                  <ListItemText
+                    primary={`${trend.asset} - ${formatStringLower(trend.trend)}`}
+                    primaryTypographyProps={{ color: "#fff" }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+
+          <Box>
+            <Typography variant="h6" fontWeight="bold" color="textWhite" gutterBottom>
+              RSI Alerts: {filteredRsi.length}
+            </Typography>
+            <List>
+              {filteredRsi.map((rsi) => (
+                <ListItem key={rsi._id} sx={{ mb: 1, bgcolor: "#2e2e3e", borderRadius: 1 }}>
+                  <ListItemText
+                    primary={`${rsi.asset} - ${rsi.rsi} ${capitalizeFirstLetter(rsi.condition)}`}
+                    primaryTypographyProps={{ color: "#fff" }}
+                  />
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        </Box>
       </Box>
     </Box>
   );

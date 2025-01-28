@@ -246,6 +246,22 @@ const Settings: React.FC = () => {
               ),
             }}
           />
+
+<TextField
+            label="Expert Advisor URL"
+            type="url"
+            variant="outlined"
+            fullWidth
+            value={webhookUrl.replace("api.hookviewpro.com", "ea.hookviewpro.com")}
+            InputProps={{
+              readOnly: true,
+              endAdornment: (
+                <IconButton onClick={() => navigator.clipboard.writeText(webhookUrl)}>
+                  <AiOutlineCopy />
+                </IconButton>
+              ),
+            }}
+          />
           <TextField
             label="New Password"
             type="password"

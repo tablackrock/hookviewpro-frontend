@@ -26,7 +26,7 @@ const Register = () => {
   };
 
   return (
-    <Container maxWidth={false} className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white">
+    <Container maxWidth={false} className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white" style={{ backgroundImage: 'url(/path/to/background.jpg)', backgroundSize: 'cover' }}>
       <Typography variant="h3" component="h3" className="text-4xl font-bold">HookViewPro</Typography>
       <Box mt={4} mb={4} textAlign="center">
         <Typography variant="body1" fontSize="1rem">1. Manage your TradingView webhooks effortlessly and connect with MetaTrader 5 for plotting alerts in your trade terminal.</Typography>
@@ -35,7 +35,7 @@ const Register = () => {
       </Box>
       <Grid container spacing={4} justifyContent="center">
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} className="p-8 rounded-lg shadow-lg w-full">
+          <Paper elevation={3} className="p-8 rounded-lg shadow-lg w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}>
             <Typography variant="h4" component="h4" mb={2} className="text-1xl font-bold mb-6 text-gray-800">Register</Typography>
             {error && <Alert severity="error" className="mb-4">{error}</Alert>}
             {success && <Alert severity="success" className="mb-4">Registration successful!</Alert>}
@@ -75,7 +75,7 @@ const Register = () => {
           </Paper>
         </Grid>
         <Grid item xs={12} md={6}>
-          <Paper elevation={3} className="p-8 rounded-lg shadow-lg w-full">
+          <Paper elevation={3} className="p-8 rounded-lg shadow-lg w-full" style={{ backgroundColor: 'rgba(255, 255, 255, 0.9)' }}>
             <Typography variant="h4" component="h4" className="text-1xl font-bold mb-6 text-gray-800">Login</Typography>
             <Typography variant="body1" mb={4} mt={2} fontSize="1rem">Already have an account? Login now to access your dashboard!</Typography>
             <Link href="/login">
@@ -86,6 +86,14 @@ const Register = () => {
           </Paper>
         </Grid>
       </Grid>
+      <Box mt={4} textAlign="center">
+        <Link href="/privacy-policy">
+          <Typography variant="body2" color="textSecondary">Privacy Policy</Typography>
+        </Link>
+        <Link href="/terms-of-service">
+          <Typography variant="body2" color="textSecondary">Terms of Service</Typography>
+        </Link>
+      </Box>
     </Container>
   );
 };

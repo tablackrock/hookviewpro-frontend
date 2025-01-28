@@ -15,6 +15,24 @@ export function formatDateTime(date: Date): string {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
 
+//Format date to hourAgo or daysAgo
+export function formatDateAgo(dateString: string) {
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diff = now.getTime() - date.getTime();
+      const diffDays = Math.floor(diff / (1000 * 60 * 60 * 24));
+      const diffHours = Math.floor(diff / (1000 * 60 * 60));
+      if (diffDays > 0) {
+        return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+      } else {
+        return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+      }
+    } catch {
+      return "Invalid Date";
+    }
+  } 
+
   // Format date
   export function formatDate(dateString: string) {
     try {
@@ -37,7 +55,7 @@ export function formatDateTime(date: Date): string {
  */
 export function capitalizeFirstLetter(value: string): string {
     if (!value) return value;
-    return value.charAt(0).toUpperCase() + value.slice(1);
+    return value.charAt(0).toUpperCase() + value.slice(1).toLocaleLowerCase();
 }
 
 //format number with 2 decimal places

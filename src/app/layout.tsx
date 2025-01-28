@@ -16,7 +16,7 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: "HookViewPro",
-  description: "TradingView WebHook Alert Management",
+  description: "TradingView WebHook Alert Management, Meta Trader 5 Integration with Execution, Signal Plotting, and more.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

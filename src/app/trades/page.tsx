@@ -29,11 +29,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TableSortLabel,
+  TablePagination,
 } from "@mui/material";
 import { AiOutlineSearch } from "react-icons/ai";
 import { BsCircleFill } from "react-icons/bs";
 import CloseIcon from "@mui/icons-material/Close";
-import { formatDate,capitalizeFirstLetter, formatNumber } from "@/utils/utils";
+import { formatDate, capitalizeFirstLetter, formatNumber } from "@/utils/utils";
 
 //
 // -- TRADINGVIEW EMBED (DARK THEME + RESPONSIVE)
@@ -200,6 +202,43 @@ const Trades: React.FC = () => {
     "4h": "240",
     "1d": "D",
   };
+
+  // Pagination
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+
+  const handleChangePage = (event: unknown, newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  // Sorting
+  const [order, setOrder] = useState<"asc" | "desc">("asc");
+  const [orderBy, setOrderBy] = useState<keyof Trade>("createdAt");
+
+  const handleRequestSort = (property: keyof Trade) => {
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const sortedTrades = trades.sort((a, b) => {
+    if (orderBy === "createdAt") {
+      return order === "asc"
+        ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    }
+    if (orderBy === "profitloss") {
+      return order === "asc"
+        ? (a.profitloss ?? 0) - (b.profitloss ?? 0)
+        : (b.profitloss ?? 0) - (a.profitloss ?? 0);
+    }
+    return 0;
+  });
 
   // --------------------------------------
   // Fetch Trades
@@ -449,7 +488,15 @@ const Trades: React.FC = () => {
           <Table size="small">
             <TableHead>
               <TableRow>
-                <TableCell>Created At</TableCell>
+                <TableCell sortDirection={orderBy === "createdAt" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "createdAt"}
+                    direction={orderBy === "createdAt" ? order : "asc"}
+                    onClick={() => handleRequestSort("createdAt")}
+                  >
+                    Created At
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell>Strategy</TableCell>
                 <TableCell>Asset</TableCell>
                 <TableCell>Status</TableCell>
@@ -457,50 +504,69 @@ const Trades: React.FC = () => {
                 <TableCell>Direction</TableCell>
                 <TableCell>Open Price</TableCell>
                 <TableCell>Close Price</TableCell>
-                <TableCell>P / L</TableCell>
+                <TableCell sortDirection={orderBy === "profitloss" ? order : false}>
+                  <TableSortLabel
+                    active={orderBy === "profitloss"}
+                    direction={orderBy === "profitloss" ? order : "asc"}
+                    onClick={() => handleRequestSort("profitloss")}
+                  >
+                    P / L
+                  </TableSortLabel>
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredTrades.map((trade) => (
-                <TableRow
-                  key={trade._id}
-                  hover
-                  style={{
-                    cursor: "pointer",
-                    backgroundColor: formatRowColor(trade.status, trade.profitloss ?? 0),
-                    margin:0,
-                  }}
-                  onClick={() => openDrawerForTrade(trade)}
-                >
-                  <TableCell>{formatDate(trade.createdAt)}</TableCell>
-                  <TableCell>
-                    {trade.payload.strategy}
-                    <BsCircleFill
-                      color={getStatusColor(trade.status)}
-                      style={{ marginLeft: 4 }}
-                    />
-                  </TableCell>
-                  <TableCell>{trade.payload.asset}</TableCell>
-                  {trade.closedAt === null ? (
-                    <TableCell>{capitalizeFirstLetter(trade.status)}</TableCell>
-                  ) : (
-                    <TableCell>{capitalizeFirstLetter(trade.status)} - {formatDate(trade.closedAt)}</TableCell>
-                  )}
-                
+              {sortedTrades
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((trade) => (
+                  <TableRow
+                    key={trade._id}
+                    hover
+                    style={{
+                      cursor: "pointer",
+                      backgroundColor: formatRowColor(trade.status, trade.profitloss ?? 0),
+                      margin:0,
+                    }}
+                    onClick={() => openDrawerForTrade(trade)}
+                  >
+                    <TableCell>{formatDate(trade.createdAt)}</TableCell>
+                    <TableCell>
+                      {trade.payload.strategy}
+                      <BsCircleFill
+                        color={getStatusColor(trade.status)}
+                        style={{ marginLeft: 4 }}
+                      />
+                    </TableCell>
+                    <TableCell>{trade.payload.asset}</TableCell>
+                    {trade.closedAt === null ? (
+                      <TableCell>{capitalizeFirstLetter(trade.status)}</TableCell>
+                    ) : (
+                      <TableCell>{capitalizeFirstLetter(trade.status)} - {formatDate(trade.closedAt)}</TableCell>
+                    )}
                   
-                  <TableCell>{capitalizeFirstLetter(trade.orderType)}</TableCell>
-                  <TableCell>{capitalizeFirstLetter(trade.payload.direction)}</TableCell>
-                  <TableCell>{trade.openPrice ?? ""}</TableCell>
-                  <TableCell>{trade.closePrice ?? ""}</TableCell>
-                  {trade.profitloss === null ? (
-                    <TableCell></TableCell>
-                  ) : (
-                    <TableCell>${formatNumber(trade.profitloss)}</TableCell>
-                  )}
-                </TableRow>
-              ))}
+                    
+                    <TableCell>{capitalizeFirstLetter(trade.orderType)}</TableCell>
+                    <TableCell>{capitalizeFirstLetter(trade.payload.direction)}</TableCell>
+                    <TableCell>{trade.openPrice ?? ""}</TableCell>
+                    <TableCell>{trade.closePrice ?? ""}</TableCell>
+                    {trade.profitloss === null ? (
+                      <TableCell></TableCell>
+                    ) : (
+                      <TableCell>${formatNumber(trade.profitloss)}</TableCell>
+                    )}
+                  </TableRow>
+                ))}
             </TableBody>
           </Table>
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={filteredTrades.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
         </TableContainer>
 
         {/* SNACKBARS */}
