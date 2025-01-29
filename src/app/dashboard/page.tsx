@@ -171,10 +171,11 @@ const Dashboard: React.FC = () => {
   
 
   useEffect(() => {
+
+    fetchAlerts();
     fetchRsi();
     fetchSuperTrends();
     fetchSuperTrendsDaily();
-    fetchAlerts();
   }, []);
 
   const filteredAlerts = alerts.filter((alert) => {
