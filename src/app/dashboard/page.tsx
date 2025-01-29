@@ -13,10 +13,7 @@ import {
   Typography,
   Card,
   CardContent,
-  IconButton,
   Button,
-  Tooltip,
-  Modal,
   TextField,
   MenuItem,
   Select,
@@ -30,9 +27,6 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { SelectChangeEvent } from "@mui/material/Select";
-import { AiFillEdit, AiFillDelete, AiOutlineCopy, AiFillPlusCircle } from "react-icons/ai";
-import { BsFillArchiveFill } from "react-icons/bs";
 
 interface Alert {
   _id: string;
@@ -319,11 +313,7 @@ const Dashboard: React.FC = () => {
 
   function handleFilterChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | { name?: string; value: string; }>) {
     const { name, value } = e.target;
-    //if(name != 'status'){
     setFilter((prev) => ({ ...prev, [name as string]: value }));
-    //}else{
-    //  setSearchTerm(value);
-    //}
   }
 
   const handleSearchChange = (
@@ -346,7 +336,7 @@ const Dashboard: React.FC = () => {
   return (
     <Box display="flex">
       <Sidebar />
-      <Box component="main" flexGrow={1} p={3} bgcolor="#f4f6f8" display="flex">
+      <Box component="main" flexGrow={1} p={2} bgcolor="#f4f6f8" display="flex">
         <Box flexGrow={1}>
           <Box position="sticky" top={0} zIndex={1} bgcolor="#ffffff" boxShadow={1} p={2}>
             <Header />
@@ -354,7 +344,7 @@ const Dashboard: React.FC = () => {
             <Box display="flex" gap={1} mb={2} flexWrap="wrap">
               <FormControl variant="outlined" size="small" sx={{ minWidth: 150 }}>
 
-            <Typography variant="h5" fontWeight="bold" mb={3} color="textSecondary">
+            <Typography variant="h5" fontWeight="bold" mb={2} color="text">
               Dashboard - {filteredAlerts.length} Alerts
             </Typography>
             </FormControl>
