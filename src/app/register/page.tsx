@@ -26,7 +26,7 @@ const Register = () => {
   };
 
   return (
-    <Container maxWidth={false} className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white" style={{ backgroundImage: 'url(/path/to/background.jpg)', backgroundSize: 'cover' }}>
+    <Container maxWidth={false} className="flex flex-col items-center justify-center h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-center text-white" style={{ background: 'linear-gradient(to right, #1e1e2f, #2e2e3e)', textAlign: 'center', color: 'white' }}>
       <Typography variant="h3" component="h3" className="text-4xl font-bold">HookViewPro</Typography>
       <Box mt={4} mb={4} textAlign="center">
         <Typography variant="body1" fontSize="1rem">1. Manage your TradingView webhooks effortlessly and connect with MetaTrader 5 for plotting alerts in your trade terminal.</Typography>
@@ -86,14 +86,7 @@ const Register = () => {
           </Paper>
         </Grid>
       </Grid>
-      <Box mt={4} textAlign="center">
-        <Link href="/privacy-policy">
-          <Typography variant="body2" color="textSecondary">Privacy Policy</Typography>
-        </Link>
-        <Link href="/terms-of-service">
-          <Typography variant="body2" color="textSecondary">Terms of Service</Typography>
-        </Link>
-      </Box>
+
     </Container>
   );
 };
