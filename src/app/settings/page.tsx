@@ -28,6 +28,7 @@ import {
 } from "@mui/material";
 import { AiOutlineEdit, AiOutlineClose, AiOutlineCopy, AiOutlinePlus, AiOutlineDelete } from "react-icons/ai"; // Import icons
 import api from "../../utils/api";
+import { CSVLink } from "react-csv";
 
 interface Account {
   _id: string;
@@ -37,6 +38,7 @@ interface Account {
   tradeStatus: boolean;
   broker: string;
   currency: string;
+  balance: number;
 }
 
 interface Configuration {
@@ -157,11 +159,14 @@ const Settings: React.FC = () => {
   const handleSearchConfigurations = async () => {
     try {
       const response = await api.get("/api/configurations/search", { params: searchFilter });
-      setAvailableConfigurations(response.data || []); // Ensure results update dynamically
+      const linkedConfigIds = linkedConfigurations.map((config) => config._id);
+      const filteredConfigurations = response.data.filter((config: Configuration) => !linkedConfigIds.includes(config._id));
+      setAvailableConfigurations(filteredConfigurations);
     } catch (err) {
       console.error("Failed to search configurations", err);
       setErrorMessage("Failed to search configurations.");
     }
+
   };
 
   const handleAddConfiguration = async (configId: string, name: string, asset: string) => {
@@ -210,6 +215,14 @@ const Settings: React.FC = () => {
       console.error("Failed to add account", err);
       setErrorMessage("Failed to add account.");
     }
+  };
+
+  const generateCSVData = () => {
+    if (!selectedAccount) return [];
+    return linkedConfigurations.map(config => ({
+      name: config.name,
+      asset: config.asset,
+    }));
   };
 
   return (
@@ -291,6 +304,7 @@ const Settings: React.FC = () => {
               <TableCell>Nickname</TableCell>
               <TableCell>Broker</TableCell>
               <TableCell>Account Number</TableCell>
+              <TableCell>Balance</TableCell>
               <TableCell>Alert Status</TableCell>
               <TableCell>Trade Status</TableCell>
               <TableCell>Actions</TableCell>
@@ -302,6 +316,7 @@ const Settings: React.FC = () => {
                 <TableCell>{account.nickName}</TableCell>
                 <TableCell>{account.broker}</TableCell>
                 <TableCell>{account.accountNumber}</TableCell>
+                <TableCell>{account.balance}</TableCell>
                 <TableCell>{account.alertStatus}</TableCell>
                 <TableCell>{account.tradeStatus}</TableCell>
                 <TableCell>
@@ -489,9 +504,20 @@ const Settings: React.FC = () => {
               </TableBody>
             </Table>
 
-            <Typography variant="h6" mt={4}>
-              Linked Configurations
-            </Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mt={4}>
+              <Typography variant="h6">
+                Linked Configurations
+              </Typography>
+              <CSVLink
+                data={generateCSVData()}
+                filename={`${selectedAccount?.nickName}_activeconfigurations.csv`}
+                className="btn btn-primary"
+              >
+                <Button variant="contained" color="primary">
+                  Export to CSV
+                </Button>
+              </CSVLink>
+            </Box>
             <Table>
               <TableBody>
                 {Array.isArray(linkedConfigurations) && linkedConfigurations.map((config) => (

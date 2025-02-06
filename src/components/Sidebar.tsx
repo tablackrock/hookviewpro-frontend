@@ -34,6 +34,7 @@ const Sidebar: React.FC = () => {
     { name: "Configurations", path: "/configurations", icon: <MdOutlineManageAccounts /> },
     { name: "Alerts", path: "/alerts", icon: <RiNotification2Fill /> },
     { name: "Trades", path: "/trades", icon: <AiFillBank /> },
+    { name: "AutoHooks", path: "/autohooks", icon: <AiFillContainer /> },
     { name: "Payloads", path: "/payloads", icon: <AiFillContainer /> },
     { name: "Settings", path: "/settings", icon: <AiFillSetting /> },
   ];
